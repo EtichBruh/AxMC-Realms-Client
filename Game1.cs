@@ -96,7 +96,7 @@ namespace AxMC_Realms_Client
                     i--;
                 }
                 //, ,
-                _viewMatrix = Matrix.CreateLookAt(new(0, 45, 100), Vector3.Zero, Vector3.UnitZ);
+                _viewMatrix = Matrix.CreateLookAt(new(0, 90, 100), Vector3.Zero, Vector3.UnitZ);
                 //cube.World
                 Camera.Follow(_sprites[0].Position);
             }
@@ -130,7 +130,7 @@ namespace AxMC_Realms_Client
             }
 
             _spriteBatch.End();
-            cube.BasiceCubeEff.View = _viewMatrix * Matrix.CreateScale(Camera.CamZoom) * Matrix.CreateRotationZ(-Camera.CamRotationDegrees);
+            cube.BasiceCubeEff.View = _viewMatrix * Matrix.CreateScale(Camera.CamZoom) * Matrix.CreateRotationZ(-Camera.CamRotationDegrees) * Matrix.CreateRotationY(Camera.CamRotationDegrees);
             cube.BasiceCubeEff.Projection = _projectionMatrix;
             //cube.World = Matrix.CreateTranslation((-3 * 50 + 25) + _sprites[0].Position.X, 5 * 50 - _sprites[0].Position.Y, 0);
             //cube.BasiceCubeEff.World = cube.World;
@@ -141,7 +141,7 @@ namespace AxMC_Realms_Client
             {
                 foreach (Matrix cubePos in MapBlocks)
                 {
-                    cube.BasiceCubeEff.World = cubePos * Matrix.CreateTranslation(_sprites[0].Position.X, -_sprites[0].Position.Y, 0);
+                    cube.BasiceCubeEff.World = cubePos * Matrix.CreateTranslation(_sprites[0].Position.X, -_sprites[0].Position.Y, -0);
                     pass.Apply();
                     GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 12); // la cube drawing
                 }
