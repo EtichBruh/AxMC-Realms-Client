@@ -30,7 +30,9 @@ float4 MainPS(VertexShaderOutput input) : COLOR
    // float RedColorBackUp = tex2D(InputSampler, input.UV).r;
     if (currentPixel.a != 0 && currentPixel.r == currentPixel.g && currentPixel.r == currentPixel.b)
     {
-        currentPixel.r = 0;
+        
+        currentPixel.r = ddx(input.UV).x;
+        currentPixel.g = ddy(input.UV).y;
     }
 
     //if(currentPixel.)

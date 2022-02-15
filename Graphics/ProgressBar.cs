@@ -17,7 +17,7 @@ namespace AxMC_Realms_Client.Graphics
         /// </summary>
         public ProgressBar(GraphicsDevice GD)
         {
-            if(Pixel.Width < 3) {
+            if(Pixel == null) {
                 Pixel = new Texture2D(GD, 3, 3);
                 Pixel.SetData(new Color[9]
                 { Color.Transparent,Color.Transparent,Color.Transparent, //Bar pixel is made like that to apply shader on it

@@ -14,9 +14,11 @@ namespace nekoT
         public Vector2 Origin { get; private set; }
         public bool isRemoved = false;
         public float Rotation { get; set; }
-        public int CurrentFrame { set; get; }
+        public int CurrentFrame = 0;
         public int Width, Height = 1;
         public SpriteEffects Effect;
+        protected Rectangle _destRect;
+        protected readonly int _width, _height;
         public SpriteAtlas(Texture2D spritesheet, int rows, int columns, int frame)
             //quick note about rows and columns
             /*Lets imagine small spritesheet 3x3
@@ -25,16 +27,16 @@ namespace nekoT
              * Row | Column | Column
              */
         {
-            int width = spritesheet.Width / columns;
-            int height = spritesheet.Height / rows;
-            CurrentFrame = frame;
-            Origin = new(width * 0.5f, height * 0.5f);
-            Texture = new(spritesheet.GraphicsDevice, width, height);
-            var data = new Color[width * height];
-            spritesheet.GetData(0, new(width * (CurrentFrame % columns), height * (CurrentFrame / columns), width, height), data, 0, data.Length);
-            Texture.SetData(data);
+            _width = spritesheet.Width / columns;
+            _height = spritesheet.Height / rows;
+            Origin = new(_width * 0.5f, _height * 0.5f);
+            Texture = spritesheet;
+            _destRect = new(_width * (frame % columns), _height * (frame / columns), _width, _height);
         }
-        public virtual void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd) { }
+        public virtual void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd) {
+            //(width * (CurrentFrame % columns), height * (CurrentFrame / columns)
+
+        }
         public object Clone()
         {
             return MemberwiseClone();
@@ -49,7 +51,7 @@ namespace nekoT
         }*/ // currently implemented in class
         public void Draw(SpriteBatch spritebatch)
         {
-            spritebatch.Draw(Texture, new((int)Position.X, (int)Position.Y, Width, Height), null, Color.White, Rotation, Origin, Effect, 1);
+            spritebatch.Draw(Texture, new((int)Position.X, (int)Position.Y, Width, Height), _destRect, Color.White, Rotation, Origin, Effect, 1);
         }
     }
 }

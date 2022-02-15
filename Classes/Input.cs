@@ -10,7 +10,7 @@ namespace AxMC_Realms_Client.Classes
 {
     public struct Input
     {
-        public static Keys MoveUp, MoveRight, MoveLeft, MoveDown, RotateCameraLeft, RotateCameraRight, ZoomOut, ZoomIn;
+        public static Keys MoveUp, MoveRight, MoveLeft, MoveDown, RotateCameraLeft, RotateCameraRight, ResetRotation, ZoomOut, ZoomIn;
         public static MouseState MState;
         public static KeyboardState KState;
         public static void setKeys()
@@ -21,6 +21,7 @@ namespace AxMC_Realms_Client.Classes
             MoveDown = Keys.S;
             RotateCameraLeft = Keys.Q;
             RotateCameraRight = Keys.E;
+            ResetRotation = Keys.Z;
             ZoomIn = Keys.OemPlus;
             ZoomOut = Keys.OemMinus;
         }
