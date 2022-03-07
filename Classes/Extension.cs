@@ -47,10 +47,25 @@ namespace nekoT
         /// <returns><paramref name="a"/> with components multiplied by <paramref name="b"/></returns>
         public static Point MultiplyBy(this Point a, int b) { a.X *= b; a.Y *= b; return a; }
         /// <summary>
+        /// Divides <see cref="Microsoft.Xna.Framework.Point"/> components by <paramref name="b"/>
+        /// </summary>
+        /// <param name="a">Point</param>
+        /// <param name="b">Divide value</param>
+        /// <returns><paramref name="a"/> with components divided by <paramref name="b"/></returns>
+        public static Point DivideBy(this Point a, int b) { a.X /= b; a.Y /= b; return a; }
+        /// <summary>
         /// Describes <see cref="Microsoft.Xna.Framework.Vector3"/> as <see cref="Microsoft.Xna.Framework.Vector2"/>
         /// </summary>
         /// <param name="a">Vector3 that should be described as vector2</param>
         /// <param name="allocatedVector2">Some allocated vector2</param>
         public static Vector2 AsVector2(this Vector3 a, Vector2 allocatedVector2) { allocatedVector2.X = a.X; allocatedVector2.Y = a.Y; return allocatedVector2; }
+        private static Matrix _empty = new Matrix();
+        public static Matrix MatrixEmpty => _empty;
+        /// <summary>
+        /// Describes <see cref="Microsoft.Xna.Framework.Vector2"/> as <see cref="Microsoft.Xna.Framework.Vector3"/>
+        /// </summary>
+        /// <param name="a">Vector2 that should be described as vector3</param>
+        /// <param name="allocatedVector2">Some allocated vector3</param>
+        public static Vector3 AsVector3(this Vector2 a, Vector3 allocatedVector3) { allocatedVector3.X = a.X; allocatedVector3.Y = a.Y; return allocatedVector3; }
     }
 }

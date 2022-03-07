@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AxMC.Camera;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using nekoT;
 
 namespace AxMC_Realms_Client.Graphics
 {
@@ -10,7 +12,7 @@ namespace AxMC_Realms_Client.Graphics
         /// set to 100 by default
         /// </summary>
         public int ProgressValue = 100;
-        private Rectangle ProgressRect = new(0, 0, 100, 30);
+        private Rectangle ProgressRect = new(0, 0, 100, 20);
         private static Texture2D Pixel;
         /// <summary>
         /// Making a pixel for bar if none was created before
@@ -32,13 +34,12 @@ namespace AxMC_Realms_Client.Graphics
         /// </summary>
         public void Update(int TargetX, int TargetY)
         {
-            ProgressRect.X = TargetX - (ProgressRect.Width / 2);
-            ProgressRect.Y = TargetY;
-
+            ProgressRect.X = TargetX;// + (ProgressRect.Width / 2);
+            ProgressRect.Y = TargetY + (ProgressRect.Height / 2);
         }
         public void Draw(SpriteBatch SB)
         {
-            SB.Draw(Pixel, ProgressRect, Color.Red);
+            SB.Draw(Pixel, ProgressRect, null,Color.Red, -Camera.CamRotationDegrees,Pixel.Bounds.Size.ToVector2() * 0.5f, SpriteEffects.None,0);
         }
     }
 }

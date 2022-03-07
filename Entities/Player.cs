@@ -35,8 +35,8 @@ namespace AxMC_Realms_Client.Entities
             if (CurrentFrame >= 0)
             {
                 var columns = (Texture.Width / _width);
-                _destRect.X = _width * (CurrentFrame % columns);
-                _destRect.Y = _height * (CurrentFrame / columns);
+                _srcRect.X = _width * (CurrentFrame % columns);
+                _srcRect.Y = _height * (CurrentFrame / columns);
             }
             RotateZoom();
             // base.Update(gameTime, spritesToAdd);

@@ -51,7 +51,7 @@ namespace AxMC_Realms_Client.Networking
         /// <param name="Y">Position Y</param>
         public static void SendPosition(byte X, byte Y)
         {
-            byte[] msg = { X, Y };
+            byte[] msg = {((byte)PacketId.Position), X, Y };
 
             client.Send(msg, SocketFlags.None);
         }

@@ -12,7 +12,8 @@ namespace AxMC_Realms_Client.Networking
     {
         public NetworkPlayer(Texture2D SpriteSheet): base(SpriteSheet, 3, 5, 0)
         {
-
+            Width = 64;
+            Height = 64;
         }
     }
 }

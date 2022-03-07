@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace nekoT
 {
-    public class SpriteAtlas
+    public abstract class SpriteAtlas
     {
         public Texture2D Texture { get; set; }
         public SpriteAtlas parent;
@@ -17,7 +17,7 @@ namespace nekoT
         public int CurrentFrame = 0;
         public int Width, Height = 1;
         public SpriteEffects Effect;
-        protected Rectangle _destRect;
+        protected Rectangle _srcRect;
         protected readonly int _width, _height;
         public SpriteAtlas(Texture2D spritesheet, int rows, int columns, int frame)
             //quick note about rows and columns
@@ -31,7 +31,7 @@ namespace nekoT
             _height = spritesheet.Height / rows;
             Origin = new(_width * 0.5f, _height * 0.5f);
             Texture = spritesheet;
-            _destRect = new(_width * (frame % columns), _height * (frame / columns), _width, _height);
+            _srcRect = new(_width * (frame % columns), _height * (frame / columns), _width, _height);
         }
         public virtual void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd) {
             //(width * (CurrentFrame % columns), height * (CurrentFrame / columns)
@@ -51,7 +51,7 @@ namespace nekoT
         }*/ // currently implemented in class
         public void Draw(SpriteBatch spritebatch)
         {
-            spritebatch.Draw(Texture, new((int)Position.X, (int)Position.Y, Width, Height), _destRect, Color.White, Rotation, Origin, Effect, 1);
+            spritebatch.Draw(Texture, new((int)Position.X, (int)Position.Y, Width, Height), _srcRect, Color.White, Rotation, Origin, Effect, 1);
         }
     }
 }

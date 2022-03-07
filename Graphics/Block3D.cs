@@ -13,7 +13,7 @@ namespace nekoT
         public Block3D(GraphicsDevice gd)
         {
             const float x = 25f;
-            const float y = 35f;
+            const float y = 50f;
             const float z = 25f;
             Vector3[] Vertices = {
                 new Vector3(-x, y, z), new Vector3(x, y, z),new Vector3(x, -y, z),new Vector3(-x, -y, z),
@@ -38,7 +38,7 @@ namespace nekoT
                 new Vector2(.75f, 0),new Vector2(.5f, 0),new Vector2(.5f, .25f),new Vector2(.75f, .25f), // Top Face: wood log top
                 new Vector2(.75f, .25f),new Vector2(1, .25f),new Vector2(1, .5f),new Vector2(.75f, .5f), // Bottom Face :   Yellow
                 new Vector2(0, .5f),new Vector2(.25f, .5f),new Vector2(.25f, .75f),new Vector2(0, .75f), // LEft Face : Green
-                new Vector2(1, .75f),new Vector2(.75f, .75f),new Vector2(.75f, 1),new Vector2(1, 1), // Right Face : Dark Red
+                new Vector2(1, 0),new Vector2(.75f, 0),new Vector2(.75f, .25f),new Vector2(1, .25f), // Right Face : Dark Red
             };
             Vector3[] Normals =
             {
