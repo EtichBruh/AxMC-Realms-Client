@@ -67,5 +67,21 @@ namespace nekoT
         /// <param name="a">Vector2 that should be described as vector3</param>
         /// <param name="allocatedVector2">Some allocated vector3</param>
         public static Vector3 AsVector3(this Vector2 a, Vector3 allocatedVector3) { allocatedVector3.X = a.X; allocatedVector3.Y = a.Y; return allocatedVector3; }
+        private static byte[] empty = { 0, 0, 0, 0 };
+        public static byte[] ToByte(this Vector2 a)
+        {
+            empty[1] = (byte)((int)a.X >> 8);
+            empty[0] = (byte)((int)a.X & 255);
+            empty[3] = (byte)((int)a.Y >> 8);
+            empty[2] = (byte)((int)a.Y & 255);
+            return empty;
+        }
+        public static Vector2 AsVector2(this byte[] b)
+        {
+            var result = Vector2.Zero;
+            result.X = (short)((b[1] << 8) + b[0]);
+            result.Y = (short)((b[3] << 8) + b[2]);
+            return result;
+        }
     }
 }

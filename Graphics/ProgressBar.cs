@@ -34,7 +34,8 @@ namespace AxMC_Realms_Client.Graphics
         /// </summary>
         public void Update(int TargetX, int TargetY)
         {
-            ProgressRect.X = TargetX;// + (ProgressRect.Width / 2);
+            ProgressRect.Width = ProgressValue;
+            ProgressRect.X = TargetX;
             ProgressRect.Y = TargetY + (ProgressRect.Height / 2);
         }
         public void Draw(SpriteBatch SB)

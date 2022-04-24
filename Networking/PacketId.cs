@@ -8,6 +8,7 @@ namespace AxMC_Realms_Client.Networking
 {
     public enum PacketId
     {
+        Hello,
         Position
     }
 }

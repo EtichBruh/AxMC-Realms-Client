@@ -25,17 +25,18 @@ struct VertexShaderOutput
 
 float4 MainPS(VertexShaderOutput input) : COLOR
 {
+    
     float4 currentPixel = tex2D(InputSampler, input.UV) * input.Color;
-
-    if ((currentPixel.a == 0.0f) &&
-            tex2D(InputSampler, input.UV - uvPix).a +
-            tex2D(InputSampler, float2(input.UV.x - uvPix.x, input.UV.y + uvPix.y)).a +
-            tex2D(InputSampler, float2(input.UV.x + uvPix.x, input.UV.y - uvPix.y)).a +
-            tex2D(InputSampler, input.UV + uvPix).a != 0
+    //float2 UVP = float2(ddx_fine(input.UV.x) / ddx(input.UV.x), ddy_fine(input.UV.y) / ddy(input.UV.y));
+    /*if ((currentPixel.a == 0.0f) &&
+            tex2D(InputSampler, input.UV - UVP).a +
+            tex2D(InputSampler, float2(input.UV.x - UVP.x, input.UV.y + UVP.y)).a +
+            tex2D(InputSampler, float2(input.UV.x + UVP.x, input.UV.y - UVP.y)).a +
+            tex2D(InputSampler, input.UV + UVP).a != 0
             )
     {
             currentPixel = xOutlineColour;
-    }
+    }*/
     return currentPixel;
 }
 

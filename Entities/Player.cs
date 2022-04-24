@@ -1,6 +1,7 @@
 ﻿using AxMC.Camera;
 using AxMC_Realms_Client.Classes;
 using AxMC_Realms_Client.Graphics;
+using AxMC_Realms_Client.Networking;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -12,34 +13,51 @@ namespace AxMC_Realms_Client.Entities
 {
     public class Player : SpriteAtlas
     {
-        private Bullet _bullet;
-        public static Point TiledPos;
+        public static Bullet _bullet;
+        public static Point TiledPos = Point.Zero;
         public static Point xyCount;
         public static int SquareOfSightStartIndex;
         public static ProgressBar HPbar;
+        int MaxHP, HP = 100;
         public Player(Texture2D spriteSheet, Texture2D BulletTexture) :
             base(spriteSheet, 3, 5, 0)
         {
             Input.setKeys();
-            _bullet = new(BulletTexture);
             TiledPos = (Position / 50).ToPoint();
             GetSquareOfSight();
-            Width = 64;
-            Height = 64;
+            _bullet = new(BulletTexture);
+            Width = 50;
+            Height = 50;
             HPbar = new(spriteSheet.GraphicsDevice);
         }
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
-            Move();
-            Shoot(spritesToAdd);
-            if (CurrentFrame >= 0)
+            PreviousFrame = CurrentFrame;
+            for (int i = 0; i < Game1._bullets.Length; i++)
             {
-                var columns = (Texture.Width / _width);
-                _srcRect.X = _width * (CurrentFrame % columns);
-                _srcRect.Y = _height * (CurrentFrame / columns);
+                if (Game1._bullets[i].parent is Enemy && (Game1._bullets[i].Position - Position).Length() < 50)
+                {
+                    HP--;
+                    Game1._bullets.RemoveAt(i);
+                    i--;
+                }
+                if (isRemoved = (HP <= 0)) break;
             }
-            RotateZoom();
-            // base.Update(gameTime, spritesToAdd);
+            if (!isRemoved)
+            {
+                HPbar.ProgressValue = HP;
+                Move();
+                Enemy.NearestPlayer = Position;
+                HPbar.Update((int)Position.X, (int)(Position.Y + Height * 0.5f));
+                Shoot(spritesToAdd);
+                if (PreviousFrame != CurrentFrame)
+                {
+                    var columns = (Texture.Width / _width);
+                    _srcRect.X = _width * (CurrentFrame % columns);
+                    _srcRect.Y = _height * (CurrentFrame / columns);
+                }
+                RotateZoom();
+            }
         }
         private void Move()
         {
@@ -69,13 +87,31 @@ namespace AxMC_Realms_Client.Entities
             }
             if (Direction != Vector2.Zero)
             {
-                var FuturePos = Position + Direction;
-                if (FuturePos.X < 0 || FuturePos.X > Map.Map.MapSize.X * 50) Direction.X = 0;
-                if (FuturePos.Y < 0 || FuturePos.Y > Map.Map.MapSize.Y * 50) Direction.Y = 0;
                 Position += Direction;
+                if (Position.X < 0 || Position.X > Map.Map.MapSize.X * 50) Position.X -= Direction.X;
+                if (Position.Y < 0 || Position.Y > Map.Map.MapSize.Y * 50) Position.Y -= Direction.Y;
                 TiledPos = (Position / 50).ToPoint();
                 GetSquareOfSight();
+                /*for (int i = 0; i <xyCount.X; i++)
+                {
+                    for (int j = 0; j < xyCount.Y; j++)
+                    {
+                        var index = Player.SquareOfSightStartIndex + i + j * Map.Map.MapSize.X;
+                        if (index < 0 || index > Game1.MapTiles.Length) continue;
+                        if (Game1.MapTiles[index] is null)
+                        {
+                            if (Position.X > (Game1.MapBlocks[index].X + 0.5f) * 50 &&
+                        Position.X < (Game1.MapBlocks[index].X - 0.5f) * 50) Position.X -= Direction.X;
+
+                            if ( Position.Y > (Game1.MapBlocks[index].Y + 0.5f) * 50 &&
+                                Position.Y < (Game1.MapBlocks[index].Y - 0.5f) * 50) Position.Y -= Direction.Y;
+
+                        }
+                    }
+                }*/
+                
                 Direction = Vector2.Zero;
+                //Connection.SendPosition(Position.ToByte());
             }
         }
         private void Shoot(List<SpriteAtlas> spritesToAdd)
@@ -114,10 +150,10 @@ namespace AxMC_Realms_Client.Entities
             }
         }
         /// <summary>
-        /// Calculates the start index for square of sight
+        /// Calculates the start index for square of sighte
         /// </summary>
         /// <returns>Start index of square of sight</returns>
-        private void GetSquareOfSight(int DrawRadius = 4)
+        private void GetSquareOfSight(int DrawRadius = 9)
         {
             xyCount.X = Math.Min(DrawRadius, TiledPos.X) + Math.Min(DrawRadius + 1, Map.Map.MapSize.X - TiledPos.X);
             xyCount.Y = Math.Min(DrawRadius, TiledPos.Y) + Math.Min(DrawRadius + 1, Map.Map.MapSize.Y - TiledPos.Y);

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace nekoT
 {
-    public abstract class SpriteAtlas
+    public abstract class SpriteAtlas : IDisposable
     {
         public Texture2D Texture { get; set; }
         public SpriteAtlas parent;
@@ -14,7 +14,7 @@ namespace nekoT
         public Vector2 Origin { get; private set; }
         public bool isRemoved = false;
         public float Rotation { get; set; }
-        public int CurrentFrame = 0;
+        public int CurrentFrame,PreviousFrame = 0;
         public int Width, Height = 1;
         public SpriteEffects Effect;
         protected Rectangle _srcRect;
@@ -40,6 +40,10 @@ namespace nekoT
         public object Clone()
         {
             return MemberwiseClone();
+        }
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
         }
         /*private Texture2D Slice(Texture2D org, int x, int y) // x is position on sprite sheet, same as y
         {

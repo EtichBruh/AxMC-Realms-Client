@@ -1,7 +1,9 @@
 ﻿using AxMC.Camera;
 using AxMC_Realms_Client.Classes;
 using AxMC_Realms_Client.Entities;
+using AxMC_Realms_Client.Inventory;
 using AxMC_Realms_Client.Map;
+using AxMC_Realms_Client.Networking;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -19,16 +21,19 @@ namespace AxMC_Realms_Client
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private FastList<SpriteAtlas> _sprites;
+        public static FastList<Bullet> _bullets;
         private List<SpriteAtlas> _spritesToAdd;
         private Effect _outline;
         private Effect _colorMask;
-        private SpriteFont Arial;
+        public static SpriteFont Arial;
         public static Tile[] MapTiles;
+        public static Vector2[] NetworkPlayers;
         public static Vector2[] MapBlocks;
         public static Matrix _projectionMatrix;
         public static Matrix _viewMatrix;
         //Block3D cube;
         Model model;
+        UI _ui;
         //private string[] WindowTitleAddition = new string[3] { "ZAMN!", "Daaamn what you know about rollin down in the deep?", "13yo kid moment" };
         public Game1()
         {
@@ -48,8 +53,10 @@ namespace AxMC_Realms_Client
 
             // TODO: Add your initialization logic here
             //cube = new(GraphicsDevice);
+
             _spritesToAdd = new List<SpriteAtlas>();
             _sprites = new FastList<SpriteAtlas>();
+            _bullets = new FastList<Bullet>();
             _graphics.PreferredBackBufferWidth = 800;
             _graphics.PreferredBackBufferHeight = 600;
             _graphics.ApplyChanges();
@@ -67,56 +74,60 @@ namespace AxMC_Realms_Client
             ((BasicEffect)model.Meshes[0].Effects[0]).TextureEnabled = true;
             ((BasicEffect)model.Meshes[0].Effects[0]).Texture = Content.Load<Texture2D>("bedrock");
             _viewMatrix = Matrix.CreateLookAt(new Vector3(0, 45, 90), Vector3.Zero, Vector3.UnitZ);
-            var sWidth = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Width / 50f /2f;
-            var sHeight = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Height / 55.9f /2f;
+            ((BasicEffect)model.Meshes[0].Effects[0]).View = _viewMatrix;
+            var sWidth = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Width / 50f / 2f;
+            var sHeight = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Height / 55.9f / 2f;
             _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, -200f, 5000f);
             _outline = Content.Load<Effect>("outline");
             _colorMask = Content.Load<Effect>("ColorMask");
             Tile.TileSet = Content.Load<Texture2D>("MCRTile");
-            Map.Map.MapLoad(new byte?[,] {
-            { 5, 1, 4, 1, 1 },
-            { 4, 1, 5, 1, 4 },
-            { 2, 0, 0, 0, 5 },
-            { 4, 1, 3, 0, 4 },
-            { 1, 1, 5, 1, 0 },
-            { 1, 1, 4, 0, 1 },
-            { 5, 1, 4, 1, 1 },
-            { 1, 1, 4, 1, 1 },
-            { 1, 2, 5, 1, 5 },
-            { 1, 2, 5, 1, 5 },
-            { 1, 2, 5, 1, 5 },
-            { 1, 2, 5, 1, 5 },
-            { 1, 2, 5, 1, 5 },
-            { 1, 2, 5, 1, 5 },
-            { 1, 2, 5, 1, 5 },
-            { 1, 2, 5, 1, 0 },
-            { 1, 2, 0, 1, 0 },
-            { 1, 2, 0, 1, 0 },
-            { 1, 2, 0, 1, 5 },
-            { 5, 2, 0, 1, 0 },
-            { 1, 2, 0, 1, 0 },
-            { 1, 2, 5, 1, 0 }
-            });
-            MapBlocks = MapBlocks.Where(item => item != Vector2.Zero).ToArray();
-            var player = new Player(Content.Load<Texture2D>("ImpostorMask"), Content.Load<Texture2D>("bullet")) { Position = Vector2.One * 10 };
+            Map.Map.MapLoad(new byte[] {
+             2, 1, 4, 1, 0, 1, 3 ,
+             2, 1, 4, 1, 0, 1, 3 ,
+             2, 1, 4, 5, 3, 5, 3 ,
+             2, 1, 4, 5, 3, 5, 3 ,
+             2, 1, 4, 5, 5, 5, 3 ,
+             2, 1, 4, 1, 0, 1, 3 ,
+             2, 1, 4, 1, 0, 1, 3 ,
+            }, 7);
+            var player = new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("bullet")) { Position = new(150,0) };
+            var enemy = new Enemy(Content.Load<Texture2D>("ImpostorMask")) { Position = new(200,0) };
             _spritesToAdd.Add(player);
+            _spritesToAdd.Add(enemy);
             //cube.BasiceCubeEff.Texture = Content.Load<Texture2D>("cubetexture");
             Arial = Content.Load<SpriteFont>("File");
-
+            Item.SpriteSheet = Content.Load<Texture2D>("DripJacket");
+            _ui = new(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, Content.Load<Texture2D>("slotconcept"), Content.Load<Texture2D>("slotequip"));
             // TODO: use this.Content to load your game content here
         }
 
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
                 Exit();
+            }
+            _colorMask.Parameters["t"].SetValue((float)gameTime.TotalGameTime.TotalSeconds);
             if (IsActive)
             {
                 Camera.CamView = GraphicsDevice.Viewport;
                 Input.KState = Keyboard.GetState();
                 Input.MState = Mouse.GetState();
-                if (_spritesToAdd.Count != 0) foreach (var item in _spritesToAdd) _sprites.Add(item);
+                if (_spritesToAdd.Count != 0) foreach (var item in _spritesToAdd)
+                    {
+                        if (item is not Bullet) _sprites.Add(item);
+                        else {
+                            _bullets.Add((Bullet)item);
+                        }
+                    }
                 _spritesToAdd.Clear();
+                for (int i = 0; i < _bullets.Length; i++)
+                {
+                    _bullets[i].Update(gameTime, _spritesToAdd);
+                    if (!_bullets[i].isRemoved) continue;
+                    _bullets.RemoveAt(i);
+                    i--;
+                }
                 for (int i = 0; i < _sprites.Length; i++)
                 {
                     _sprites[i].Update(gameTime, _spritesToAdd);
@@ -124,9 +135,8 @@ namespace AxMC_Realms_Client
                     _sprites.RemoveAt(i);
                     i--;
                 }
+                _ui.Update();
                 Camera.Follow(_sprites[0].Position);
-                Player.HPbar.Update((int)_sprites[0].Position.X, (int)(_sprites[0].Position.Y + _sprites[0].Height * 0.5f));
-
                 if (OperatingSystem.IsWindows())
                 {
                     if (Input.KState.IsKeyDown(Keys.NumPad5))
@@ -142,9 +152,10 @@ namespace AxMC_Realms_Client
 
         private void Window_ClientSizeChanged(object sender, EventArgs e)
         {
-            var sWidth = GraphicsDevice.Viewport.Width * 0.5f;
-            var sHeight = GraphicsDevice.Viewport.Height * 0.5f;
-            _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, 0f, 4000f);
+            var sWidth = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Width / 50f / 2f;
+            var sHeight = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Height / 55.9f / 2f;
+            _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, -200f, 5000f);
+            _ui.Resize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
             //((BasicEffect)model.Meshes[0].Effects[0]).Projection = _projectionMatrix;
             //cube.BasiceCubeEff.Projection = _projectionMatrix;
         }
@@ -171,12 +182,49 @@ namespace AxMC_Realms_Client
             bitmap.Save("Screenshot.png", System.Drawing.Imaging.ImageFormat.Png);
         }
         #endregion
+        bool collide = false;
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
             _spriteBatch.Begin(transformMatrix: Camera.CamTransform, samplerState: SamplerState.PointClamp);
+            
+            for (int i = 0; i < Player.xyCount.X; i++)
+            {
+                for (int j = 0; j < Player.xyCount.Y; j++)
+                {
+                    var index = Player.SquareOfSightStartIndex + i + j * Map.Map.MapSize.X;
+                    if (index < 0 || index > MapTiles.Length) continue;
+                    if (MapTiles[index] is null) continue;
+                    Tile.SharedPos.X = Player.TiledPos.X + i;
+                    Tile.SharedPos.Y = Player.TiledPos.Y + j;
+                    _spriteBatch.Draw(Tile.TileSet, Tile.SharedPos * 50, MapTiles[index].SrcRect, Color.White, 0, Vector2.Zero, scale: 3.125f, 0, 0);
+                }
+            }
+            if (NetworkPlayers is not null)
+            {
+                for (int i = 0; i < NetworkPlayers.Length; i++)
+                {
+                    _spriteBatch.Draw(_sprites[0].Texture, NetworkPlayers[i], new(0, 0, 9, 9), Color.White);
+                }
+            }
+            for (int i = 0; i < _sprites.Length; i++)
+            {
+                _sprites[i].Draw(_spriteBatch);
+                if(_sprites[i] is Enemy e)
+                {
+                    e.HPbar.Draw(_spriteBatch);
+                }
+            }
+            for (int i = 0; i < _bullets.Length; i++)
+            {
+                _bullets[i].Draw(_spriteBatch);
+            }
+            Player.HPbar.Draw(_spriteBatch);
+            _spriteBatch.DrawString(Arial, collide.ToString(), Vector2.Zero, Color.Black);
+            _spriteBatch.DrawString(Arial, _sprites[0].Position.ToString(), Vector2.Zero, Color.Black, -Camera.CamRotationDegrees, Arial.MeasureString(_sprites[0].Position.ToString()), 1 / Camera.CamZoom, SpriteEffects.None, 0);
+            _spriteBatch.End();// actually 256x256 is pretty big im not sure it will load it
 
             for (int i = 0; i < Player.xyCount.X; i++)
             {
@@ -184,30 +232,21 @@ namespace AxMC_Realms_Client
                 {
                     var index = Player.SquareOfSightStartIndex + i + j * Map.Map.MapSize.X;
                     if (index < 0 || index > MapTiles.Length) continue;
-                    Tile.SharedPos.X = MapTiles[index].X;
-                    Tile.SharedPos.Y = MapTiles[index].Y;
-                    _spriteBatch.Draw(Tile.TileSet, Tile.SharedPos * 50, MapTiles[index].DestRect, Color.White, 0, Vector2.Zero, scale: 3.125f, 0, 0);
+                    if (MapTiles[index] is not null) continue;
+                    Tile.SharedPos.X = Player.TiledPos.X + i + 0.5f;
+                    Tile.SharedPos.Y = Player.TiledPos.Y + j + 0.5f;
+                    ((BasicEffect)model.Meshes[0].Effects[0]).World =
+                    Matrix.CreateTranslation(-Tile.SharedPos.X + (_sprites[0].Position.X / 50f), Tile.SharedPos.Y - (_sprites[0].Position.Y / 50f), 0)
+                    * Matrix.CreateRotationZ(-Camera.CamRotationDegrees);
+                    ((BasicEffect)model.Meshes[0].Effects[0]).Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
+                    model.Meshes[0].Draw();
                 }
             }
-            for (int i = 0; i < _sprites.Length; i++)
-            {
-                _sprites[i].Draw(_spriteBatch);
-            }
-            Player.HPbar.Draw(_spriteBatch); //new(_sprites[0].Position.X - Arial.MeasureString(_sprites[0].Position.ToString()).X*0.5f, _sprites[0].Position.Y - _sprites[0].Height *0.5f)
-            _spriteBatch.DrawString(Arial, _sprites[0].Position.ToString(), Vector2.Zero, Color.Black, -Camera.CamRotationDegrees, Arial.MeasureString(_sprites[0].Position.ToString()), 1 / Camera.CamZoom, SpriteEffects.None, 0);
-            _spriteBatch.End();
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-          
-                foreach (Vector2 cubePos in MapBlocks)
-                {
-                
-                    ((BasicEffect)model.Meshes[0].Effects[0]).World = 
-                    Matrix.CreateTranslation(-cubePos.X + (_sprites[0].Position.X / 50f), cubePos.Y - (_sprites[0].Position.Y / 50f), 0) * Matrix.CreateRotationZ(Camera.CamRotationDegrees);
-                    //Matrix.CreateTranslation(cubePos.AsVector3(Vector3.Zero)) * Matrix.CreateRotationZ(Camera.CamRotationDegrees);
-                ((BasicEffect)model.Meshes[0].Effects[0]).View = _viewMatrix;
-                ((BasicEffect)model.Meshes[0].Effects[0]).Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
-                model.Meshes[0].Draw();
-                }
+            _ui.Draw(_spriteBatch);
+
+            _spriteBatch.End();
             /*cube.BasiceCubeEff.View = _viewMatrix * Matrix.CreateTranslation(-_sprites[0].Position.X, _sprites[0].Position.Y, 0) * Matrix.CreateScale(Camera.CamZoom);
 
 
