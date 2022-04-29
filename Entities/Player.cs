@@ -18,7 +18,9 @@ namespace AxMC_Realms_Client.Entities
         public static Point xyCount;
         public static int SquareOfSightStartIndex;
         public static ProgressBar HPbar;
-        int MaxHP, HP = 100;
+        int HP = 1000;
+        int[] Stats = { 2000, 1, 20 };
+
         public Player(Texture2D spriteSheet, Texture2D BulletTexture) :
             base(spriteSheet, 3, 5, 0)
         {
@@ -45,7 +47,7 @@ namespace AxMC_Realms_Client.Entities
             }
             if (!isRemoved)
             {
-                HPbar.ProgressValue = HP;
+                HPbar.ProgressValue = HP / (Stats[0] / 100);
                 Move();
                 Enemy.NearestPlayer = Position;
                 HPbar.Update((int)Position.X, (int)(Position.Y + Height * 0.5f));
@@ -108,15 +110,28 @@ namespace AxMC_Realms_Client.Entities
 
                         }
                     }
+                }
+                for (int i = 0; i < Bag.Bags.Length; i++)
+                {
+                    if ((Bag.Bags[i].Rect.Location.ToVector2() - Position).Length() > 100) {
+                        Bag.Bags[i].isChoosed = false;
+                        Bag.NearestBag = -1;
+                        
+                    }
+                    else { Bag.NearestBag = i; break; }
                 }*/
-                
                 Direction = Vector2.Zero;
                 //Connection.SendPosition(Position.ToByte());
             }
         }
         private void Shoot(List<SpriteAtlas> spritesToAdd)
         {
-            if (Input.MState.LeftButton == ButtonState.Pressed)
+               /* if (Bag.NearestBag != -1 &&Input.MState.LeftButton == ButtonState.Pressed && !Bag.Bags[Bag.NearestBag].isChoosed)
+                {
+                    Bag.Bags[Bag.NearestBag].isChoosed = true;
+            }*/
+
+            else if (Input.MState.LeftButton == ButtonState.Pressed)
             {
                 Bullet b = _bullet.Clone() as Bullet;
                 b.Position = Position;

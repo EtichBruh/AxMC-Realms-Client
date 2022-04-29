@@ -92,6 +92,7 @@ namespace AxMC_Realms_Client
             }, 7);
             var player = new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("bullet")) { Position = new(150,0) };
             var enemy = new Enemy(Content.Load<Texture2D>("ImpostorMask")) { Position = new(200,0) };
+            Bag bag = new(Content.Load<Texture2D>("DripSusBag"));
             _spritesToAdd.Add(player);
             _spritesToAdd.Add(enemy);
             //cube.BasiceCubeEff.Texture = Content.Load<Texture2D>("cubetexture");

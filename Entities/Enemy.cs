@@ -43,7 +43,7 @@ namespace AxMC_Realms_Client.Entities
             if (timer <= 0)
             {
                 timer = timera;
-                Shoot(spritesToAdd, 7);
+                Shoot(spritesToAdd, 3);
             }
             HPbar.ProgressValue = HP;
             HPbar.Update((int)Position.X, (int)(Position.Y + Height * 0.5f));
@@ -86,11 +86,7 @@ namespace AxMC_Realms_Client.Entities
                 b.LifeSpan = 2;
                 b.parent = this;
 
-                float someoffset = -1;
-                for (int i = 0; i < bulllets; i++)
-                {
-                    someoffset += 0.5f;
-                }
+                float someoffset = -1 + bulllets * 0.5f;
                     for (int i = 0; i <= bulllets; i++)
                 {
                     Bullet bb = b.Clone() as Bullet;
@@ -100,8 +96,6 @@ namespace AxMC_Realms_Client.Entities
                     spritesToAdd.Add(bb);
                 }
                 //spritesToAdd.Add(b);
-
-                //_spawnedBullets += 0.1f;
             }
         }
         private void Shoot(List<SpriteAtlas> spritesToAdd)
