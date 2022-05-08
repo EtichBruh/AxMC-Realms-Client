@@ -36,6 +36,7 @@ namespace AxMC_Realms_Client.Entities
                     i--;
                 }
                 if (isRemoved = (HP <= 0)) {
+                    BasicEntity.InteractEnt.Add(new Portal((int)Position.X, (int)Position.Y));
                     Dispose();
                     break; }
             }
@@ -43,7 +44,7 @@ namespace AxMC_Realms_Client.Entities
             if (timer <= 0)
             {
                 timer = timera;
-                Shoot(spritesToAdd, 3);
+                Shoot(spritesToAdd,3);
             }
             HPbar.ProgressValue = HP;
             HPbar.Update((int)Position.X, (int)(Position.Y + Height * 0.5f));
@@ -61,18 +62,18 @@ namespace AxMC_Realms_Client.Entities
                 Bullet b = Player._bullet.Clone() as Bullet;
                 b.Position = Position;
                 b.Direction = Vector2.Normalize(NearestPlayer - Position);
-                b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + MathF.Atan(0.9f);
-                if (b.Rotation > 0 && b.Rotation < MathF.Atan(0.9f) + MathF.Atan(0.9f))
+                b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + Bullet.textureoffset;
+                if (b.Rotation > 0 && b.Rotation < Bullet.textureoffset *2)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 4;
                 }
-                else if (b.Rotation > MathF.Atan(0.9f) + MathF.Atan(0.9f) && b.Rotation < MathF.Atan(0.9f) * 4)
+                else if (b.Rotation > Bullet.textureoffset *2 && b.Rotation < Bullet.textureoffset * 4)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 9;
                 }
-                else if (b.Rotation < 0 && b.Rotation > -MathF.Atan(0.9f) - MathF.Atan(0.9f))
+                else if (b.Rotation < 0 && b.Rotation > -Bullet.textureoffset * 2)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 13;
@@ -90,9 +91,9 @@ namespace AxMC_Realms_Client.Entities
                     for (int i = 0; i <= bulllets; i++)
                 {
                     Bullet bb = b.Clone() as Bullet;
-                    bb.Direction.X = MathF.Cos(bb.Rotation - MathF.Atan(0.9f)*(i - someoffset));
-                    bb.Direction.Y = MathF.Sin(bb.Rotation - MathF.Atan(0.9f)*(i - someoffset));
-                    bb.Rotation = MathF.Atan2(bb.Direction.Y, bb.Direction.X) + MathF.Atan(0.9f);
+                    bb.Direction.X = MathF.Cos(bb.Rotation - Bullet.textureoffset * (i - someoffset));
+                    bb.Direction.Y = MathF.Sin(bb.Rotation - Bullet.textureoffset * (i - someoffset));
+                    bb.Rotation = MathF.Atan2(bb.Direction.Y, bb.Direction.X) + Bullet.textureoffset;
                     spritesToAdd.Add(bb);
                 }
                 //spritesToAdd.Add(b);
@@ -105,18 +106,18 @@ namespace AxMC_Realms_Client.Entities
                 Bullet b = Player._bullet.Clone() as Bullet;
                 b.Position = Position;
                 b.Direction = Vector2.Normalize(NearestPlayer - Position);
-                b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + MathF.Atan(0.9f);
-                if (b.Rotation > 0 && b.Rotation < MathF.Atan(0.9f) + MathF.Atan(0.9f))
+                b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + Bullet.textureoffset;
+                if (b.Rotation > 0 && b.Rotation < Bullet.textureoffset *2)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 4;
                 }
-                else if (b.Rotation > MathF.Atan(0.9f) + MathF.Atan(0.9f) && b.Rotation < MathF.Atan(0.9f) * 4)
+                else if (b.Rotation > Bullet.textureoffset *2 && b.Rotation < Bullet.textureoffset * 4)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 9;
                 }
-                else if (b.Rotation < 0 && b.Rotation > -MathF.Atan(0.9f) - MathF.Atan(0.9f))
+                else if (b.Rotation < 0 && b.Rotation > -Bullet.textureoffset *2)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 13;

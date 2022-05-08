@@ -7,23 +7,22 @@ using System.Text;
 
 namespace AxMC_Realms_Client.Entities
 {
-    public class Bag
+    public class Bag : BasicEntity
     {
-        public static FastList<Bag> Bags;
-        public static int NearestBag;
         public Item[] items;
-        public static Texture2D SpriteSheet;
-        public Rectangle SrcRect = new(0, 0, 16, 14);
-        public Rectangle Rect = new(0, 0, 16, 14);
-        public bool isChoosed;
-        private int[] collisionMask = new int[16*14];
 
-        public Bag(Texture2D _SpriteSheet)
+        //public bool isChoosed;
+        private int[] collisionMask = new int[16*14];
+        public Bag(int x, int y)
         {
-            SpriteSheet = _SpriteSheet;
+            SrcRect = new(0, 0, 16, 14);
+            Rect = new(0, 0, 32, 28);
+            items = new Item[1];
+            (Rect.X, Rect.Y )= (x, y);
            // GetCollisionMask(SpriteSheet, 0, 0);
         }
         #region Collision
+        /*
         private void GetCollisionMask(Texture2D org, int _x, int _y) // x is position on sprite sheet, same as y
         {
             org.GetData(0, new(_x, _y, SrcRect.Width, SrcRect.Height), collisionMask, 0, collisionMask.Length);
@@ -31,8 +30,6 @@ namespace AxMC_Realms_Client.Entities
             {
                 if (collisionMask[i] != 0) collisionMask[i] = 1;
             }
-            char[] somedebug = new char[collisionMask.Length + 14];
-            Array.Fill(somedebug, 'g');
             var lines = new StringBuilder();
             for (var i = 0; i < SrcRect.Height; i++)
             {
@@ -58,13 +55,10 @@ namespace AxMC_Realms_Client.Entities
                     else if (collisionMask[i] != 0) somedebug[i] = '#';
 
                 }
-            }*/
-           // Console.WriteLine(somedebug);
-        }
+            }
+            // Console.WriteLine(somedebug);
+        }*/
         #endregion
-        public void Draw(SpriteBatch sb)
-        {
-            sb.Draw(SpriteSheet, Rect, SrcRect, Color.White,0,Vector2.One*8,0,0);
-        }
+
     }
 }

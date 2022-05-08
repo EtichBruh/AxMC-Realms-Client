@@ -110,44 +110,50 @@ namespace AxMC_Realms_Client.Entities
 
                         }
                     }
-                }
-                for (int i = 0; i < Bag.Bags.Length; i++)
-                {
-                    if ((Bag.Bags[i].Rect.Location.ToVector2() - Position).Length() > 100) {
-                        Bag.Bags[i].isChoosed = false;
-                        Bag.NearestBag = -1;
-                        
-                    }
-                    else { Bag.NearestBag = i; break; }
                 }*/
+                if (BasicEntity.InteractEnt.Length > 0)
+                {
+                    for (int i = 0; i < BasicEntity.InteractEnt.Length; i++)
+                    {
+                        if ((BasicEntity.InteractEnt[i].Rect.Location.ToVector2() - Position).Length() < 100)
+                        {
+                            BasicEntity.NInteract = i; break;
+
+                        }
+                        else { BasicEntity.NInteract = -1; }
+                    }
+                }
                 Direction = Vector2.Zero;
                 //Connection.SendPosition(Position.ToByte());
             }
         }
         private void Shoot(List<SpriteAtlas> spritesToAdd)
-        {
-               /* if (Bag.NearestBag != -1 &&Input.MState.LeftButton == ButtonState.Pressed && !Bag.Bags[Bag.NearestBag].isChoosed)
+        { 
+            /*if (Bag.Bags.Length > 0)
+            {
+                if (Bag.NearestBag != -1 && Input.MState.LeftButton == ButtonState.Pressed && !Bag.Bags[Bag.NearestBag].isChoosed)
                 {
                     Bag.Bags[Bag.NearestBag].isChoosed = true;
+                }
             }*/
 
-            else if (Input.MState.LeftButton == ButtonState.Pressed)
+            if (Input.MState.LeftButton == ButtonState.Pressed)
             {
                 Bullet b = _bullet.Clone() as Bullet;
                 b.Position = Position;
                 b.Direction = Vector2.Normalize(Vector2.Transform(new(Input.MState.X, Input.MState.Y), Matrix.Invert(Camera.CamTransform)) - Position);
-                b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + MathF.Atan(0.9f);
-                if (b.Rotation > 0 && b.Rotation < MathF.Atan(0.9f) + MathF.Atan(0.9f))
+                b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + Bullet.textureoffset;
+                if (b.Rotation > 0 && b.Rotation < Bullet.textureoffset *2)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 4;
                 }
-                else if (b.Rotation > MathF.Atan(0.9f) + MathF.Atan(0.9f) && b.Rotation < MathF.Atan(0.9f) * 4)
+                else if (b.Rotation > Bullet.textureoffset *2&& b.Rotation < Bullet.textureoffset * 4)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 9;
                 }
-                else if (b.Rotation < 0 && b.Rotation > -MathF.Atan(0.9f) - MathF.Atan(0.9f))
+                else if (b.Rotation < 0 && b.Rotation > -Bullet.textureoffset *2)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 13;
@@ -183,11 +189,11 @@ namespace AxMC_Realms_Client.Entities
         {
             if (Input.KState.IsKeyDown(Input.ZoomIn))
             {
-                Camera.CamZoom += 0.1f;
+                Camera.CamZoom += 0.2f;
             }
             if (Input.KState.IsKeyDown(Input.ZoomOut))
             {
-                Camera.CamZoom -= 0.1f;
+                Camera.CamZoom -= 0.2f;
             }
             if (Input.KState.IsKeyDown(Input.RotateCameraLeft))
             {

@@ -57,8 +57,8 @@ namespace AxMC_Realms_Client
             _spritesToAdd = new List<SpriteAtlas>();
             _sprites = new FastList<SpriteAtlas>();
             _bullets = new FastList<Bullet>();
-            _graphics.PreferredBackBufferWidth = 800;
-            _graphics.PreferredBackBufferHeight = 600;
+            _graphics.PreferredBackBufferWidth = 900;
+            _graphics.PreferredBackBufferHeight = 700;
             _graphics.ApplyChanges();
             // _viewMatrix = Matrix.CreateLookAt(_cameraPos, Vector3.Forward, Vector3.Up);
 
@@ -81,6 +81,7 @@ namespace AxMC_Realms_Client
             _outline = Content.Load<Effect>("outline");
             _colorMask = Content.Load<Effect>("ColorMask");
             Tile.TileSet = Content.Load<Texture2D>("MCRTile");
+            Bag.SpriteSheet = Content.Load<Texture2D>("DripSusBag");
             Map.Map.MapLoad(new byte[] {
              2, 1, 4, 1, 0, 1, 3 ,
              2, 1, 4, 1, 0, 1, 3 ,
@@ -92,13 +93,12 @@ namespace AxMC_Realms_Client
             }, 7);
             var player = new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("bullet")) { Position = new(150,0) };
             var enemy = new Enemy(Content.Load<Texture2D>("ImpostorMask")) { Position = new(200,0) };
-            Bag bag = new(Content.Load<Texture2D>("DripSusBag"));
             _spritesToAdd.Add(player);
             _spritesToAdd.Add(enemy);
             //cube.BasiceCubeEff.Texture = Content.Load<Texture2D>("cubetexture");
             Arial = Content.Load<SpriteFont>("File");
             Item.SpriteSheet = Content.Load<Texture2D>("DripJacket");
-            _ui = new(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, Content.Load<Texture2D>("slotconcept"), Content.Load<Texture2D>("slotequip"));
+            _ui = new(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, Content.Load<Texture2D>("slotconcept"), Content.Load<Texture2D>("slotequip"), Content.Load<Texture2D>("DropBagUI"));
             // TODO: use this.Content to load your game content here
         }
 
@@ -183,14 +183,13 @@ namespace AxMC_Realms_Client
             bitmap.Save("Screenshot.png", System.Drawing.Imaging.ImageFormat.Png);
         }
         #endregion
-        bool collide = false;
+        const float factor = 1f / 2.55f;
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
             _spriteBatch.Begin(transformMatrix: Camera.CamTransform, samplerState: SamplerState.PointClamp);
-            
             for (int i = 0; i < Player.xyCount.X; i++)
             {
                 for (int j = 0; j < Player.xyCount.Y; j++)
@@ -200,7 +199,8 @@ namespace AxMC_Realms_Client
                     if (MapTiles[index] is null) continue;
                     Tile.SharedPos.X = Player.TiledPos.X + i;
                     Tile.SharedPos.Y = Player.TiledPos.Y + j;
-                    _spriteBatch.Draw(Tile.TileSet, Tile.SharedPos * 50, MapTiles[index].SrcRect, Color.White, 0, Vector2.Zero, scale: 3.125f, 0, 0);
+            byte col = (byte)(255 - (Math.Abs(((Tile.SharedPos *= 50) - _sprites[0].Position).Length()) * factor)) ;
+                    _spriteBatch.Draw(Tile.TileSet, Tile.SharedPos, MapTiles[index].SrcRect, new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
                 }
             }
             if (NetworkPlayers is not null)
@@ -218,13 +218,15 @@ namespace AxMC_Realms_Client
                     e.HPbar.Draw(_spriteBatch);
                 }
             }
+            for(int i = 0; i < BasicEntity.InteractEnt.Length; i++)
+            {
+                BasicEntity.InteractEnt[i].Draw(_spriteBatch);
+            }
             for (int i = 0; i < _bullets.Length; i++)
             {
                 _bullets[i].Draw(_spriteBatch);
             }
             Player.HPbar.Draw(_spriteBatch);
-            _spriteBatch.DrawString(Arial, collide.ToString(), Vector2.Zero, Color.Black);
-            _spriteBatch.DrawString(Arial, _sprites[0].Position.ToString(), Vector2.Zero, Color.Black, -Camera.CamRotationDegrees, Arial.MeasureString(_sprites[0].Position.ToString()), 1 / Camera.CamZoom, SpriteEffects.None, 0);
             _spriteBatch.End();// actually 256x256 is pretty big im not sure it will load it
 
             for (int i = 0; i < Player.xyCount.X; i++)
@@ -237,13 +239,14 @@ namespace AxMC_Realms_Client
                     Tile.SharedPos.X = Player.TiledPos.X + i + 0.5f;
                     Tile.SharedPos.Y = Player.TiledPos.Y + j + 0.5f;
                     ((BasicEffect)model.Meshes[0].Effects[0]).World =
-                    Matrix.CreateTranslation(-Tile.SharedPos.X + (_sprites[0].Position.X / 50f), Tile.SharedPos.Y - (_sprites[0].Position.Y / 50f), 0)
+                    Matrix.CreateTranslation( (_sprites[0].Position.X *0.02f)- Tile.SharedPos.X, Tile.SharedPos.Y - (_sprites[0].Position.Y * 0.02f), 0)
                     * Matrix.CreateRotationZ(-Camera.CamRotationDegrees);
                     ((BasicEffect)model.Meshes[0].Effects[0]).Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
                     model.Meshes[0].Draw();
                 }
             }
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            _spriteBatch.DrawString(Arial, (1 / gameTime.ElapsedGameTime.TotalSeconds).ToString()[..2], Vector2.Zero, Color.Black);
 
             _ui.Draw(_spriteBatch);
 
