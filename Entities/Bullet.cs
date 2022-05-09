@@ -11,7 +11,7 @@ namespace AxMC_Realms_Client.Entities
         public byte id = 0;
         public double LifeSpan;
         public float Speed;
-        public const float textureoffset = 0.7853982f; //MathHelper.ToRadians(45)
+        public const float TexOffset = 0.7853982f; //MathHelper.ToRadians(45)
 
         public Bullet(Texture2D spriteSheet)
         : base(spriteSheet, 1, 1, 0)

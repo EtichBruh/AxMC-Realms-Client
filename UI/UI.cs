@@ -5,45 +5,45 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using nekoT;
 
-namespace AxMC_Realms_Client.Inventory
+namespace AxMC_Realms_Client.UI
 {
     public class UI
     {
         public static Texture2D SlotSprite, EquipmentSlotSprite, BagUI, PEnterUI;
-        public Rectangle BagUIRect = new(0,0,64,32);
+        public Rectangle BagUISrcRect,BagUIRect = new(0,0,64,32);
         public Rectangle PEnterUIRect = new(0,0,32,16);
-        public Rectangle BagUISrcRect = new(0,0,64,32);
         public ProgressBar HPBar, MPBar;
         Slot[] invetory = new Slot[4];
         Slot[] Equipment = new Slot[4];
-        public UI(int screenWidth,int screenHeight, Texture2D _slots, Texture2D _Eslots, Texture2D bagui, Texture2D penterui)
+        public UI(int SWidth,int SHeight, Texture2D _slots, Texture2D _Eslots, Texture2D bagui, Texture2D penterui)
         {
             SlotSprite = _slots;
             EquipmentSlotSprite = _Eslots;
             BagUI = bagui;
             PEnterUI = penterui;
-            screenWidth /= 2;
-            int screenHCenter = (int)(screenHeight / 1.25);
-            BagUIRect.X = screenWidth;
-            BagUIRect.Y = screenHeight - BagUIRect.Height;
+            SWidth /= 2;
+            int SHeightC = (int)(SHeight / 1.25);// Height center + half of center
+            BagUISrcRect = BagUIRect;
+            BagUIRect.X = SWidth;
+            BagUIRect.Y = SHeight - BagUIRect.Height;
             for (int x = 0; x < invetory.Length; x++)
             {
                 invetory[x] = new();
-                invetory[x].Rect.Y = screenHCenter;
-                invetory[x].Rect.X = (x-1) * invetory[x].Rect.Width - invetory[x].Rect.Width/2 + screenWidth ;
+                invetory[x].Rect.Y = SHeightC;
+                invetory[x].Rect.X = (x-1) * invetory[x].Rect.Width - invetory[x].Rect.Width/2 + SWidth ;
             }
         }
-        public void Resize(int screenWidth,int screenHeight)
+        public void Resize(int SWidth,int SHeight)
         {
+            SWidth /= 2;
 
-            screenWidth /= 2;
-            int screenHCenter = (int)(screenHeight / 1.25);
-            BagUIRect.X = screenWidth;
-            BagUIRect.Y = screenHeight - BagUIRect.Height;
+            int screenHCenter = (int)(SHeight / 1.25);
+            BagUIRect.X = SWidth;
+            BagUIRect.Y = SHeight - BagUIRect.Height;
             for (int x = 0; x < invetory.Length; x++)
             {
                 invetory[x].Rect.Y = screenHCenter;
-                invetory[x].Rect.X = (x-1) * (invetory[x].Rect.Width) - invetory[x].Rect.Width/2 + screenWidth;
+                invetory[x].Rect.X = (x-1) * (invetory[x].Rect.Width) - invetory[x].Rect.Width/2 + SWidth;
             }
         }
         public void Update()
@@ -99,15 +99,9 @@ namespace AxMC_Realms_Client.Inventory
                         BagUISrcRect.Width = 64;
                         BagUIRect.X = prevX;
                     }
-                    else if (len == 2)
-                    {
-                        sb.Draw(BagUI, BagUIRect, Color.White);
-                    }
+                    else if (len == 2) sb.Draw(BagUI, BagUIRect, Color.White);
                 }
-                else
-                {
-                    sb.Draw(PEnterUI, PEnterUIRect, Color.White);
-                }
+                else sb.Draw(PEnterUI, PEnterUIRect, Color.White);
             }
             
         }

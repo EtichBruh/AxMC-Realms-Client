@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿/*using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace nekoT
@@ -8,8 +8,8 @@ namespace nekoT
         public VertexBuffer VertexBuffer;
         public IndexBuffer IndexBuffer;
 
-        public BasicEffect BasiceCubeEff;
-        public static int SmthIndicesDevidedByThree;
+        public BasicEffect BBlockEff;
+        public static int IndicesDividedBy3;
         public Block3D(GraphicsDevice gd)
         {
             const float x = 25f;
@@ -65,11 +65,11 @@ namespace nekoT
             VertexBuffer = new(gd, typeof(VertexPositionNormalTexture), _tVertices.Length, BufferUsage.None);
             VertexBuffer.SetData(_tVertices);
 
-            BasiceCubeEff = new(gd) { TextureEnabled = true };
+            BBlockEff = new(gd) { TextureEnabled = true };
 
             IndexBuffer = new IndexBuffer(gd, typeof(ushort), _triangleIndices.Length, BufferUsage.WriteOnly);// init buffer of indexes
             IndexBuffer.SetData(_triangleIndices);
-            SmthIndicesDevidedByThree = _triangleIndices.Length / 3;
+            IndicesThreeTimesLess = _triangleIndices.Length / 3;
         }
     }
-}
+}*/

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AxMC_Realms_Client.Inventory
+namespace AxMC_Realms_Client.UI
 {
     public class Item
     {

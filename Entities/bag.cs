@@ -1,4 +1,4 @@
-﻿using AxMC_Realms_Client.Inventory;
+﻿using AxMC_Realms_Client.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;

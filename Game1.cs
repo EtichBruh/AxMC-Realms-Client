@@ -1,9 +1,8 @@
 ﻿using AxMC.Camera;
 using AxMC_Realms_Client.Classes;
 using AxMC_Realms_Client.Entities;
-using AxMC_Realms_Client.Inventory;
-using AxMC_Realms_Client.Map;
-using AxMC_Realms_Client.Networking;
+using AxMC_Realms_Client.UI;
+using Map;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -11,7 +10,6 @@ using nekoT;
 using Nez;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Versioning;
 
 namespace AxMC_Realms_Client
@@ -20,31 +18,31 @@ namespace AxMC_Realms_Client
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+
+
         private FastList<SpriteAtlas> _sprites;
-        public static FastList<Bullet> _bullets;
         private List<SpriteAtlas> _spritesToAdd;
-        private Effect _outline;
-        private Effect _colorMask;
-        public static SpriteFont Arial;
+        public static FastList<Bullet> _bullets;
         public static Tile[] MapTiles;
-        public static Vector2[] NetworkPlayers;
-        public static Vector2[] MapBlocks;
+
+
+        public static SpriteFont Arial;
+        private Effect _outline, _colorMask;
+        public static Vector2[] NetworkPlayers, MapBlocks;
         public static Matrix _projectionMatrix;
-        public static Matrix _viewMatrix;
-        //Block3D cube;
         Model model;
-        UI _ui;
-        //private string[] WindowTitleAddition = new string[3] { "ZAMN!", "Daaamn what you know about rollin down in the deep?", "13yo kid moment" };
+        UI.UI _UI;
+        private string[] WindowTitleAddition = new string[3] { "ZAMN!", "Daaamn what you know about rollin down in the deep?", "13yo kid moment" };
         public Game1()
         {
 
             _graphics = new GraphicsDeviceManager(this);
-            //Random rand = new();
+            Random rand = new();
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += Window_ClientSizeChanged;
-            //  Window.Title = Window.Title + ": " + WindowTitleAddition[rand.Next(0, 2)];
+            Window.Title = Window.Title + ": " + WindowTitleAddition[rand.Next(0, 2)];
 
         }
 
@@ -58,11 +56,14 @@ namespace AxMC_Realms_Client
             _sprites = new FastList<SpriteAtlas>();
             _bullets = new FastList<Bullet>();
             _graphics.PreferredBackBufferWidth = 900;
-            _graphics.PreferredBackBufferHeight = 700;
+            _graphics.PreferredBackBufferHeight = 696;
             _graphics.ApplyChanges();
-            // _viewMatrix = Matrix.CreateLookAt(_cameraPos, Vector3.Forward, Vector3.Up);
 
-            //cube.BasiceCubeEff.Projection = _projectionMatrix;//* Matrix.CreateRotationX(-MathHelper.ToRadians(45));
+            var sWidth = GraphicsDevice.Viewport.Width * .01f; // its 1 / (50 * 2), before it was / 50 / 2
+            var sHeight = GraphicsDevice.Viewport.Height * 0.0089445438282648f;// its 1 / (55.9 * 2), before it was / 55.9 / 2
+            _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, -200f, 5000f);
+
+
             base.Initialize();
         }
 
@@ -70,35 +71,31 @@ namespace AxMC_Realms_Client
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Mouse.SetCursor(MouseCursor.FromTexture2D(Content.Load<Texture2D>("cursor"), 16, 16));
+
             model = Content.Load<Model>("Wall");
             ((BasicEffect)model.Meshes[0].Effects[0]).TextureEnabled = true;
             ((BasicEffect)model.Meshes[0].Effects[0]).Texture = Content.Load<Texture2D>("bedrock");
-            _viewMatrix = Matrix.CreateLookAt(new Vector3(0, 45, 90), Vector3.Zero, Vector3.UnitZ);
-            ((BasicEffect)model.Meshes[0].Effects[0]).View = _viewMatrix;
-            var sWidth = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Width / 50f / 2f;
-            var sHeight = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Height / 55.9f / 2f;
-            _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, -200f, 5000f);
+            ((BasicEffect)model.Meshes[0].Effects[0]).View = Matrix.CreateLookAt(new Vector3(0, 45, 90), Vector3.Zero, Vector3.UnitZ);
+
             _outline = Content.Load<Effect>("outline");
             _colorMask = Content.Load<Effect>("ColorMask");
-            Tile.TileSet = Content.Load<Texture2D>("MCRTile");
-            Bag.SpriteSheet = Content.Load<Texture2D>("DripSusBag");
-            Map.Map.MapLoad(new byte[] {
-             2, 1, 4, 1, 0, 1, 3 ,
-             2, 1, 4, 1, 0, 1, 3 ,
-             2, 1, 4, 5, 3, 5, 3 ,
-             2, 1, 4, 5, 3, 5, 3 ,
-             2, 1, 4, 5, 5, 5, 3 ,
-             2, 1, 4, 1, 0, 1, 3 ,
-             2, 1, 4, 1, 0, 1, 3 ,
-            }, 7);
-            var player = new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("bullet")) { Position = new(150,0) };
-            var enemy = new Enemy(Content.Load<Texture2D>("ImpostorMask")) { Position = new(200,0) };
-            _spritesToAdd.Add(player);
-            _spritesToAdd.Add(enemy);
-            //cube.BasiceCubeEff.Texture = Content.Load<Texture2D>("cubetexture");
             Arial = Content.Load<SpriteFont>("File");
+
+            Tile.TileSet = Content.Load<Texture2D>("MCRTile");
+            Map.Map.MapLoad("map.json");
+
             Item.SpriteSheet = Content.Load<Texture2D>("DripJacket");
-            _ui = new(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, Content.Load<Texture2D>("slotconcept"), Content.Load<Texture2D>("slotequip"), Content.Load<Texture2D>("DropBagUI"));
+            BasicEntity.SpriteSheet = Content.Load<Texture2D>("DripSusBag");
+
+            _spritesToAdd.Add(new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("bullet")) { Position = new(150, 0) });
+            _spritesToAdd.Add(new Enemy(Content.Load<Texture2D>("ImpostorMask")) { Position = new(200, 0) });
+
+            _UI = new(GraphicsDevice.Viewport.Width,
+                GraphicsDevice.Viewport.Height,
+                Content.Load<Texture2D>("slotconcept"),
+                Content.Load<Texture2D>("slotequip"),
+                Content.Load<Texture2D>("DropBagUI"),
+                Content.Load<Texture2D>("EnterButton"));
             // TODO: use this.Content to load your game content here
         }
 
@@ -136,7 +133,7 @@ namespace AxMC_Realms_Client
                     _sprites.RemoveAt(i);
                     i--;
                 }
-                _ui.Update();
+                _UI.Update();
                 Camera.Follow(_sprites[0].Position);
                 if (OperatingSystem.IsWindows())
                 {
@@ -153,12 +150,11 @@ namespace AxMC_Realms_Client
 
         private void Window_ClientSizeChanged(object sender, EventArgs e)
         {
-            var sWidth = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Width / 50f / 2f;
-            var sHeight = model.Meshes[0].Effects[0].GraphicsDevice.Viewport.Height / 55.9f / 2f;
+            var sWidth = GraphicsDevice.Viewport.Width * .01f; // its 1 / (50 * 2), before it was / 50 / 2
+            var sHeight = GraphicsDevice.Viewport.Height * 0.0089445438282648f;// its 1 / (55.9 * 2), before it was / 55.9 / 2
             _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, -200f, 5000f);
-            _ui.Resize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-            //((BasicEffect)model.Meshes[0].Effects[0]).Projection = _projectionMatrix;
-            //cube.BasiceCubeEff.Projection = _projectionMatrix;
+            _UI.Resize(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+
         }
         #region screenshot
         [SupportedOSPlatform("windows")]
@@ -239,7 +235,8 @@ namespace AxMC_Realms_Client
                     Tile.SharedPos.X = Player.TiledPos.X + i + 0.5f;
                     Tile.SharedPos.Y = Player.TiledPos.Y + j + 0.5f;
                     ((BasicEffect)model.Meshes[0].Effects[0]).World =
-                    Matrix.CreateTranslation( (_sprites[0].Position.X *0.02f)- Tile.SharedPos.X, Tile.SharedPos.Y - (_sprites[0].Position.Y * 0.02f), 0)
+                    Matrix.CreateTranslation( (_sprites[0].Position.X *0.02f)- Tile.SharedPos.X,
+                    Tile.SharedPos.Y - (_sprites[0].Position.Y * 0.02f), 0)
                     * Matrix.CreateRotationZ(-Camera.CamRotationDegrees);
                     ((BasicEffect)model.Meshes[0].Effects[0]).Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
                     model.Meshes[0].Draw();
@@ -248,7 +245,7 @@ namespace AxMC_Realms_Client
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
             _spriteBatch.DrawString(Arial, (1 / gameTime.ElapsedGameTime.TotalSeconds).ToString()[..2], Vector2.Zero, Color.Black);
 
-            _ui.Draw(_spriteBatch);
+            _UI.Draw(_spriteBatch);
 
             _spriteBatch.End();
             /*cube.BasiceCubeEff.View = _viewMatrix * Matrix.CreateTranslation(-_sprites[0].Position.X, _sprites[0].Position.Y, 0) * Matrix.CreateScale(Camera.CamZoom);
