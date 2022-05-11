@@ -40,7 +40,7 @@ namespace AxMC_Realms_Client.Graphics
         }
         public void Draw(SpriteBatch SB)
         {
-            SB.Draw(Pixel, ProgressRect, null,Color.Red, -Camera.CamRotationDegrees,Pixel.Bounds.Size.ToVector2() * 0.5f, SpriteEffects.None,0);
+            SB.Draw(Pixel, ProgressRect, null,Color.Red, -Camera.RotDegr,Pixel.Bounds.Size.ToVector2() * 0.5f, SpriteEffects.None,0);
         }
     }
 }

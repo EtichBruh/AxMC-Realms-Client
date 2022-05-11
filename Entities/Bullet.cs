@@ -22,11 +22,13 @@ namespace AxMC_Realms_Client.Entities
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
             LifeSpan -= gameTime.ElapsedGameTime.TotalSeconds;
-            if (isRemoved = (LifeSpan <= 0)) { }
+            if (isRemoved = (LifeSpan <= 0)) {
+            
+            }
             else
             {
                 Position += Direction * Speed;
-                int index = (int)Position.X / 50 + ((int)Position.Y / 50) * Map.Map.MapSize.X;
+                int index = (int)Position.X / 50 + ((int)Position.Y / 50) * Map.Map.Size.X;
                 isRemoved = (index < Game1.MapTiles.Length && index > -1 && Game1.MapTiles[index] is null);
             }
         }

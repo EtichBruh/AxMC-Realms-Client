@@ -115,6 +115,18 @@
 /processorParam:TextureFormat=Color
 /build:DropBagUI.png
 
+#begin ElecticBullet.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:ElecticBullet.png
+
 #begin EnterButton.png
 /importer:TextureImporter
 /processor:TextureProcessor

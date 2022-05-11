@@ -10,15 +10,15 @@ namespace AxMC_Realms_Client.Entities
 {
     public class Portal : BasicEntity
     {
-        byte id;
-        string Name = "Sussy portal";
+        public static Texture2D SpriteSheet;
+        public byte id = 1;
         public Portal(int x, int y)
         {
             Rect.X = x;
             Rect.Y = y;
-            Rect.Width = 50;
-            Rect.Height = 50;
-            SrcRect = new(45, 0, 8, 8);
+            Rect.Width = 24;
+            Rect.Height = 24;
+            SrcRect = new(0, 0, 8, 8);
         }
     }
 }

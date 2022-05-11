@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Versioning;
 
+
 namespace AxMC_Realms_Client
 {
     public class Game1 : Game
@@ -32,7 +33,7 @@ namespace AxMC_Realms_Client
         public static Matrix _projectionMatrix;
         Model model;
         UI.UI _UI;
-        private string[] WindowTitleAddition = new string[3] { "ZAMN!", "Daaamn what you know about rollin down in the deep?", "13yo kid moment" };
+        //private string[] WindowTitleAddition = new string[3] { "ZAMN!", "Daaamn what you know about rollin down in the deep?", "13yo kid moment" };
         public Game1()
         {
 
@@ -42,8 +43,7 @@ namespace AxMC_Realms_Client
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += Window_ClientSizeChanged;
-            Window.Title = Window.Title + ": " + WindowTitleAddition[rand.Next(0, 2)];
-
+            //Window.Title = Window.Title + ": " + WindowTitleAddition[rand.Next(0, 2)];
         }
 
         protected override void Initialize()
@@ -62,6 +62,7 @@ namespace AxMC_Realms_Client
             var sWidth = GraphicsDevice.Viewport.Width * .01f; // its 1 / (50 * 2), before it was / 50 / 2
             var sHeight = GraphicsDevice.Viewport.Height * 0.0089445438282648f;// its 1 / (55.9 * 2), before it was / 55.9 / 2
             _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, -200f, 5000f);
+            Camera.View = GraphicsDevice.Viewport;
 
 
             base.Initialize();
@@ -82,12 +83,13 @@ namespace AxMC_Realms_Client
             Arial = Content.Load<SpriteFont>("File");
 
             Tile.TileSet = Content.Load<Texture2D>("MCRTile");
-            Map.Map.MapLoad("map.json");
+            Map.Map.Load("map.json");
 
             Item.SpriteSheet = Content.Load<Texture2D>("DripJacket");
-            BasicEntity.SpriteSheet = Content.Load<Texture2D>("DripSusBag");
+            Bag.SpriteSheet = Content.Load<Texture2D>("DripSusBag");
+            Portal.SpriteSheet = Content.Load<Texture2D>("SussyPortals");
 
-            _spritesToAdd.Add(new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("bullet")) { Position = new(150, 0) });
+            _spritesToAdd.Add(new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("ElecticBullet")) { Position = new(150, 0) });
             _spritesToAdd.Add(new Enemy(Content.Load<Texture2D>("ImpostorMask")) { Position = new(200, 0) });
 
             _UI = new(GraphicsDevice.Viewport.Width,
@@ -105,10 +107,9 @@ namespace AxMC_Realms_Client
             {
                 Exit();
             }
-            _colorMask.Parameters["t"].SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+            //_colorMask.Parameters["t"].SetValue((float)gameTime.TotalGameTime.TotalSeconds);
             if (IsActive)
             {
-                Camera.CamView = GraphicsDevice.Viewport;
                 Input.KState = Keyboard.GetState();
                 Input.MState = Mouse.GetState();
                 if (_spritesToAdd.Count != 0) foreach (var item in _spritesToAdd)
@@ -150,6 +151,7 @@ namespace AxMC_Realms_Client
 
         private void Window_ClientSizeChanged(object sender, EventArgs e)
         {
+            Camera.View = GraphicsDevice.Viewport;
             var sWidth = GraphicsDevice.Viewport.Width * .01f; // its 1 / (50 * 2), before it was / 50 / 2
             var sHeight = GraphicsDevice.Viewport.Height * 0.0089445438282648f;// its 1 / (55.9 * 2), before it was / 55.9 / 2
             _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, -200f, 5000f);
@@ -185,12 +187,12 @@ namespace AxMC_Realms_Client
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
-            _spriteBatch.Begin(transformMatrix: Camera.CamTransform, samplerState: SamplerState.PointClamp);
+            _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp);
             for (int i = 0; i < Player.xyCount.X; i++)
             {
                 for (int j = 0; j < Player.xyCount.Y; j++)
                 {
-                    var index = Player.SquareOfSightStartIndex + i + j * Map.Map.MapSize.X;
+                    var index = Player.SquareOfSightStartIndex + i + j * Map.Map.Size.X;
                     if (index < 0 || index > MapTiles.Length) continue;
                     if (MapTiles[index] is null) continue;
                     Tile.SharedPos.X = Player.TiledPos.X + i;
@@ -199,7 +201,7 @@ namespace AxMC_Realms_Client
                     _spriteBatch.Draw(Tile.TileSet, Tile.SharedPos, MapTiles[index].SrcRect, new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
                 }
             }
-            if (NetworkPlayers is not null)
+            if (NetworkPlayers != null)
             {
                 for (int i = 0; i < NetworkPlayers.Length; i++)
                 {
@@ -216,34 +218,41 @@ namespace AxMC_Realms_Client
             }
             for(int i = 0; i < BasicEntity.InteractEnt.Length; i++)
             {
-                BasicEntity.InteractEnt[i].Draw(_spriteBatch);
+                if(BasicEntity.InteractEnt[i] is Bag)
+                {
+                    BasicEntity.InteractEnt[i].Draw(_spriteBatch, Bag.SpriteSheet);
+                }else if(BasicEntity.InteractEnt[i] is Portal)
+                {
+                    BasicEntity.InteractEnt[i].Draw(_spriteBatch, Portal.SpriteSheet);
+                }
+                    
             }
             for (int i = 0; i < _bullets.Length; i++)
             {
                 _bullets[i].Draw(_spriteBatch);
             }
             Player.HPbar.Draw(_spriteBatch);
-            _spriteBatch.End();// actually 256x256 is pretty big im not sure it will load it
+            _spriteBatch.End();
 
             for (int i = 0; i < Player.xyCount.X; i++)
             {
                 for (int j = 0; j < Player.xyCount.Y; j++)
                 {
-                    var index = Player.SquareOfSightStartIndex + i + j * Map.Map.MapSize.X;
+                    var index = Player.SquareOfSightStartIndex + i + j * Map.Map.Size.X;
                     if (index < 0 || index > MapTiles.Length) continue;
                     if (MapTiles[index] is not null) continue;
-                    Tile.SharedPos.X = Player.TiledPos.X + i + 0.5f;
-                    Tile.SharedPos.Y = Player.TiledPos.Y + j + 0.5f;
+                    //Tile.SharedPos.X = Player.TiledPos.X + i + 0.5f;
+                    //Tile.SharedPos.Y = Player.TiledPos.Y + j + 0.5f;
                     ((BasicEffect)model.Meshes[0].Effects[0]).World =
-                    Matrix.CreateTranslation( (_sprites[0].Position.X *0.02f)- Tile.SharedPos.X,
-                    Tile.SharedPos.Y - (_sprites[0].Position.Y * 0.02f), 0)
-                    * Matrix.CreateRotationZ(-Camera.CamRotationDegrees);
+                    Matrix.CreateTranslation( _sprites[0].Position.X *0.02f- Player.TiledPos.X - i - 0.5f,
+                    Player.TiledPos.Y + j + 0.5f - _sprites[0].Position.Y * 0.02f, 0)
+                    * Matrix.CreateRotationZ(-Camera.RotDegr);
                     ((BasicEffect)model.Meshes[0].Effects[0]).Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
                     model.Meshes[0].Draw();
                 }
             }
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            _spriteBatch.DrawString(Arial, (1 / gameTime.ElapsedGameTime.TotalSeconds).ToString()[..2], Vector2.Zero, Color.Black);
+            _spriteBatch.DrawString(Arial, (1 / gameTime.ElapsedGameTime.TotalSeconds).ToString()[..2], Vector2.Zero, Color.IndianRed);
 
             _UI.Draw(_spriteBatch);
 

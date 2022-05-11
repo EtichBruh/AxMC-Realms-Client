@@ -4,6 +4,8 @@ using AxMC_Realms_Client.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using nekoT;
+using System;
+using System.Collections;
 
 namespace AxMC_Realms_Client.UI
 {
@@ -49,6 +51,16 @@ namespace AxMC_Realms_Client.UI
         public void Update()
         {
             HoveringOnSlot();
+            if(BasicEntity.NInteract != -1 && BasicEntity.InteractEnt[BasicEntity.NInteract] is Portal)
+            {
+                if(Input.KState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Enter) || Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed &&
+                    PEnterUIRect.Intersects(new Rectangle(Input.MState.Position, new Point(1, 1))))
+                {
+                    
+                    string a = ((Map.Maps)((Portal)BasicEntity.InteractEnt[BasicEntity.NInteract]).id).ToString();
+                    Map.Map.Load(a + ".json");
+                }
+            }
         }
         public void Draw(SpriteBatch sb)
         {
@@ -101,7 +113,7 @@ namespace AxMC_Realms_Client.UI
                     }
                     else if (len == 2) sb.Draw(BagUI, BagUIRect, Color.White);
                 }
-                else sb.Draw(PEnterUI, PEnterUIRect, Color.White);
+                //else sb.Draw(PEnterUI, PEnterUIRect, Color.White);
             }
             
         }

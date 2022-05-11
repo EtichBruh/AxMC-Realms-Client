@@ -1,4 +1,5 @@
-﻿using AxMC_Realms_Client.Graphics;
+﻿using AxMC.Camera;
+using AxMC_Realms_Client.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using nekoT;
@@ -28,15 +29,17 @@ namespace AxMC_Realms_Client.Entities
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
             PreviousFrame = CurrentFrame;
+            Rotation = -Camera.RotDegr;
             for (int i = 0; i < Game1._bullets.Length; i++)
             {
-                if (Game1._bullets[i].parent is not Enemy && (Game1._bullets[i].Position - Position).Length() < 50) {
+                if (Game1._bullets[i].parent is not Enemy && (Game1._bullets[i].Position - Position).LengthSquared() <= 2500) {
                     HP--;
+                    HPbar.ProgressValue = HP / (MaxHP / 100);
                     Game1._bullets.RemoveAt(i);
                     i--;
                 }
                 if (isRemoved = (HP <= 0)) {
-                    BasicEntity.InteractEnt.Add(new Bag((int)Position.X, (int)Position.Y));
+                    BasicEntity.InteractEnt.Add(new Portal((int)Position.X, (int)Position.Y));
                     Dispose();
                     break; }
             }
@@ -46,13 +49,12 @@ namespace AxMC_Realms_Client.Entities
                 timer = timera;
                 Shoot(spritesToAdd,3);
             }
-            HPbar.ProgressValue = HP / (MaxHP / 100);
             HPbar.Update((int)Position.X, (int)(Position.Y + Height * 0.5f));
             if (PreviousFrame != CurrentFrame)
             {
-                var columns = (Texture.Width / _width);
-                _srcRect.X = _width * (CurrentFrame % columns);
-                _srcRect.Y = _height * (CurrentFrame / columns);
+                var columns = (Texture.Width / _srcRect.Width);
+                _srcRect.X = _srcRect.Width * (CurrentFrame % columns);
+                _srcRect.Y = _srcRect.Height * (CurrentFrame / columns);
             }
         }
         private void Shoot(List<SpriteAtlas> spritesToAdd, int bulllets)

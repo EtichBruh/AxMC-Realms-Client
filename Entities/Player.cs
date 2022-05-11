@@ -37,9 +37,10 @@ namespace AxMC_Realms_Client.Entities
             PreviousFrame = CurrentFrame;
             for (int i = 0; i < Game1._bullets.Length; i++)
             {
-                if (Game1._bullets[i].parent is Enemy && (Game1._bullets[i].Position - Position).Length() < 50)
+                if (Game1._bullets[i].parent is Enemy && (Game1._bullets[i].Position - Position).LengthSquared() <= 2500)
                 {
                     HP--;
+                    HPbar.ProgressValue = HP / (Stats[0] / 100);
                     Game1._bullets.RemoveAt(i);
                     i--;
                 }
@@ -47,21 +48,20 @@ namespace AxMC_Realms_Client.Entities
             }
             if (!isRemoved)
             {
-                HPbar.ProgressValue = HP / (Stats[0] / 100);
-                Move();
+                Move(gameTime);
                 Enemy.NearestPlayer = Position;
                 HPbar.Update((int)Position.X, (int)(Position.Y + Height * 0.5f));
                 Shoot(spritesToAdd);
                 if (PreviousFrame != CurrentFrame)
                 {
-                    var columns = (Texture.Width / _width);
-                    _srcRect.X = _width * (CurrentFrame % columns);
-                    _srcRect.Y = _height * (CurrentFrame / columns);
+                    var columns = (Texture.Width / _srcRect.Width);
+                    _srcRect.X = _srcRect.Width * (CurrentFrame % columns);
+                    _srcRect.Y = _srcRect.Height * (CurrentFrame / columns);
                 }
                 RotateZoom();
             }
         }
-        private void Move()
+        private void Move(GameTime gt)
         {
             if (Input.KState.IsKeyDown(Input.MoveDown))
             {
@@ -89,10 +89,16 @@ namespace AxMC_Realms_Client.Entities
             }
             if (Direction != Vector2.Zero)
             {
+                if (Rotation != 0)
+                {
+                    var rot = MathF.Atan2(Direction.Y, Direction.X) + Rotation;
+                    Direction.X = MathF.Cos(rot);
+                    Direction.Y = MathF.Sin(rot);
+                }
                 Position += Direction;
-                if (Position.X < 0 || Position.X > Map.Map.MapSize.X * 50) Position.X -= Direction.X;
-                if (Position.Y < 0 || Position.Y > Map.Map.MapSize.Y * 50) Position.Y -= Direction.Y;
-                TiledPos = (Position / 50).ToPoint();
+                if (Position.X < 0 || Position.X > Map.Map.Size.X * 50) Position.X -= Direction.X;
+                if (Position.Y < 0 || Position.Y > Map.Map.Size.Y * 50) Position.Y -= Direction.Y;
+                TiledPos = (Position * .02f).ToPoint();
                 GetSquareOfSight();
                 /*for (int i = 0; i <xyCount.X; i++) // this is collision code that doesnt work
                 {
@@ -140,7 +146,7 @@ namespace AxMC_Realms_Client.Entities
             {
                 Bullet b = _bullet.Clone() as Bullet;
                 b.Position = Position;
-                b.Direction = Vector2.Normalize(Vector2.Transform(new(Input.MState.X, Input.MState.Y), Matrix.Invert(Camera.CamTransform)) - Position);
+                b.Direction = Vector2.Normalize(Vector2.Transform(new(Input.MState.X, Input.MState.Y), Matrix.Invert(Camera.Transform)) - Position);
                 b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + Bullet.TexOffset;
                 if (b.Rotation > 0 && b.Rotation < Bullet.TexOffset *2)
                 {
@@ -175,14 +181,14 @@ namespace AxMC_Realms_Client.Entities
         /// <returns>Start index of square of sight</returns>
         private void GetSquareOfSight(int DrawRadius = 9)
         {
-            xyCount.X = Math.Min(DrawRadius, TiledPos.X) + Math.Min(DrawRadius + 1, Map.Map.MapSize.X - TiledPos.X);
-            xyCount.Y = Math.Min(DrawRadius, TiledPos.Y) + Math.Min(DrawRadius + 1, Map.Map.MapSize.Y - TiledPos.Y);
+            xyCount.X = Math.Min(DrawRadius, TiledPos.X) + Math.Min(DrawRadius + 1, Map.Map.Size.X - TiledPos.X);
+            xyCount.Y = Math.Min(DrawRadius, TiledPos.Y) + Math.Min(DrawRadius + 1, Map.Map.Size.Y - TiledPos.Y);
 
             TiledPos.X = Math.Max(0, TiledPos.X - DrawRadius);
             TiledPos.Y = Math.Max(0, TiledPos.Y - DrawRadius);
 
 
-            SquareOfSightStartIndex = TiledPos.X + TiledPos.Y * Map.Map.MapSize.X;
+            SquareOfSightStartIndex = TiledPos.X + TiledPos.Y * Map.Map.Size.X;
         }
         private void RotateZoom()
         {
@@ -196,17 +202,17 @@ namespace AxMC_Realms_Client.Entities
             }
             if (Input.KState.IsKeyDown(Input.RotateCameraLeft))
             {
-                Camera.CamRotationDegrees -= MathHelper.ToRadians(1);
-                Rotation = -Camera.CamRotationDegrees;
+                Camera.RotDegr -= MathHelper.ToRadians(1);
+                Rotation = -Camera.RotDegr;
             }
             if (Input.KState.IsKeyDown(Input.RotateCameraRight))
             {
-                Camera.CamRotationDegrees += MathHelper.ToRadians(1);
-                Rotation = -Camera.CamRotationDegrees;
+                Camera.RotDegr += MathHelper.ToRadians(1);
+                Rotation = -Camera.RotDegr;
             }
             if (Input.KState.IsKeyDown(Input.ResetRotation))
             {
-                Camera.CamRotationDegrees = 0;
+                Camera.RotDegr = 0;
                 Rotation = 0;
             }
         }

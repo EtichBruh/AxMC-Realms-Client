@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AxMC.Camera;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using System;
@@ -9,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace AxMC_Realms_Client.Entities
 {
+
     public abstract class BasicEntity
     {
-        public static Texture2D SpriteSheet;
         /// <summary>
         /// interactable entities
         /// </summary>
@@ -22,11 +23,10 @@ namespace AxMC_Realms_Client.Entities
         public static int NInteract = -1;
         public Rectangle SrcRect;
         public Rectangle Rect;
-         
-        public void Draw(SpriteBatch sb)
+
+        public void Draw(SpriteBatch sb, Texture2D SSheet)
         {
-            
-            sb.Draw(SpriteSheet, Rect, SrcRect, Color.White, 0, SrcRect.Size.ToVector2() * .5f, 0, 0);
+            sb.Draw(SSheet, Rect, SrcRect, Color.White, -Camera.RotDegr, SrcRect.Size.ToVector2() *.5f, 0, 0);
         }
     }
 }

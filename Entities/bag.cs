@@ -10,8 +10,8 @@ namespace AxMC_Realms_Client.Entities
     public class Bag : BasicEntity
     {
         public Item[] items;
-
         //public bool isChoosed;
+        public static Texture2D SpriteSheet;
         private int[] collisionMask = new int[16*14];
         public Bag(int x, int y)
         {
