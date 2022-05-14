@@ -8,39 +8,45 @@ namespace AxMC_Realms_Client.Graphics
     public class ProgressBar
     {
         /// <summary>
-        /// Value in % of 100
-        /// set to 100 by default
+        /// value like current HP or smth like that, honestly dunno how to name it
         /// </summary>
-        public int ProgressValue = 100;
-        private Rectangle ProgressRect = new(0, 0, 100, 20);
+        public int Progress;
+        float Factor;
+        private Vector2 Pos;
         private static Texture2D Pixel;
         /// <summary>
         /// Making a pixel for bar if none was created before
         /// </summary>
-        public ProgressBar(GraphicsDevice GD)
+        public ProgressBar()
         {
-            if(Pixel == null) {
-                Pixel = new Texture2D(GD, 3, 3);
-                Pixel.SetData(new Color[9]
-                { Color.Transparent,Color.Transparent,Color.Transparent, //Bar pixel is made like that to apply shader on it
+        }
+        public static void Init(GraphicsDevice GD)
+        {
+            /*Pixel = new Texture2D(GD, 3, 3);
+            Pixel.SetData(new Color[9]
+            { Color.Transparent,Color.Transparent,Color.Transparent, //Bar pixel is made like that to apply shader on it
             Color.Transparent,Color.White,Color.Transparent,
             Color.Transparent,Color.Transparent,Color.Transparent
-                });
-            }
+            });*/
+            Pixel = new Texture2D(GD, 1, 1);
+            Pixel.SetData(new Color[] {Color.White});
         }
         /// <summary>
         /// Updates Position of Health Bar
         /// TargetY equal targetY + half of targetHeight
         /// </summary>
-        public void Update(int TargetX, int TargetY)
+        public void Update(float TargetX, float TargetY)
         {
-            ProgressRect.Width = ProgressValue;
-            ProgressRect.X = TargetX;
-            ProgressRect.Y = TargetY + (ProgressRect.Height / 2);
+            Pos.X = TargetX;
+            Pos.Y = TargetY + 10;
+        }
+        public void SetFactor(int Max)
+        {
+            Factor = 1f/ (Max *.03f);
         }
         public void Draw(SpriteBatch SB)
         {
-            SB.Draw(Pixel, ProgressRect, null,Color.Red, -Camera.RotDegr,Pixel.Bounds.Size.ToVector2() * 0.5f, SpriteEffects.None,0);
+            SB.Draw(Pixel, Pos, null,Color.Red, -Camera.RotDegr,Pixel.Bounds.Size.ToVector2() * 0.5f, new Vector2(Progress*Factor, 8), SpriteEffects.None,0);
         }
     }
 }

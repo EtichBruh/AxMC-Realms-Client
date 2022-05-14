@@ -17,7 +17,7 @@ namespace AxMC_Realms_Client.Entities
         {
             SrcRect = new(0, 0, 16, 14);
             Rect = new(0, 0, 32, 28);
-            items = new Item[1];
+            items = new Item[3];
             (Rect.X, Rect.Y )= (x, y);
            // GetCollisionMask(SpriteSheet, 0, 0);
         }

@@ -22,9 +22,9 @@ namespace AxMC_Realms_Client.Entities
         {
             Width = 50;
             Height = 50;
-            HPbar = new(SpriteSheet.GraphicsDevice);
+            HPbar = new() { Progress = HP };
+            HPbar.SetFactor(MaxHP);
         }
-
 
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
@@ -33,13 +33,17 @@ namespace AxMC_Realms_Client.Entities
             for (int i = 0; i < Game1._bullets.Length; i++)
             {
                 if (Game1._bullets[i].parent is not Enemy && (Game1._bullets[i].Position - Position).LengthSquared() <= 2500) {
-                    HP--;
-                    HPbar.ProgressValue = HP / (MaxHP / 100);
+                    HPbar.Progress = HP--;
                     Game1._bullets.RemoveAt(i);
                     i--;
                 }
                 if (isRemoved = (HP <= 0)) {
-                    BasicEntity.InteractEnt.Add(new Portal((int)Position.X, (int)Position.Y));
+                    
+                    BasicEntity.InteractEnt.Add(new Bag((int)Position.X, (int)Position.Y));
+                    Random r = new();
+                    Position.X -= 25;
+                    Position.Y -= 25;
+                    BasicEntity.InteractEnt.Add(new Portal(r.Next((int)Position.X,(int)Position.X + 50), r.Next((int)Position.Y, (int)Position.Y + 50)));
                     Dispose();
                     break; }
             }
@@ -49,7 +53,7 @@ namespace AxMC_Realms_Client.Entities
                 timer = timera;
                 Shoot(spritesToAdd,3);
             }
-            HPbar.Update((int)Position.X, (int)(Position.Y + Height * 0.5f));
+            HPbar.Update(Position.X, Position.Y + Height * 0.5f);
             if (PreviousFrame != CurrentFrame)
             {
                 var columns = (Texture.Width / _srcRect.Width);
@@ -65,15 +69,15 @@ namespace AxMC_Realms_Client.Entities
                 b.Position = Position;
                 b.Direction = Vector2.Normalize(NearestPlayer - Position);
                 b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + Bullet.TexOffset;
-                if (b.Rotation > 0 && b.Rotation < Bullet.TexOffset *2)
+                if (b.Rotation > 0 && b.Rotation < Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 4;
+                    CurrentFrame = 3;
                 }
-                else if (b.Rotation > Bullet.TexOffset *2 && b.Rotation < Bullet.TexOffset * 4)
+                else if (b.Rotation > Bullet.TexOffset * 2 && b.Rotation < Bullet.TexOffset * 4)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 9;
+                    CurrentFrame = 8;
                 }
                 else if (b.Rotation < 0 && b.Rotation > -Bullet.TexOffset * 2)
                 {
@@ -83,7 +87,11 @@ namespace AxMC_Realms_Client.Entities
                 else
                 {
                     Effect = SpriteEffects.FlipHorizontally;
-                    CurrentFrame = 4;
+                    CurrentFrame = 3;
+                }
+                if (PreviousFrame == CurrentFrame)
+                {
+                    CurrentFrame++;
                 }
                 b.Speed = 5;
                 b.LifeSpan = 2;

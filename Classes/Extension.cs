@@ -25,6 +25,7 @@ namespace nekoT
         /// <param name="b">Second vector2</param>
         /// <returns><see langword="true"/> if Vector2 a X Y is lower than Vector2 b X Y </returns>
         public static bool Less(this Vector2 a, Vector2 b) { return (a.X < b.X && a.Y < b.Y); }
+        public static Vector2 Increase(this Vector2 a,float b) { a.Y += b; return a; }
         /// <summary>
         /// Compares Vector2 A to Point B 
         /// </summary>

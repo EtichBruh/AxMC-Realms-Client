@@ -27,6 +27,7 @@ namespace AxMC_Realms_Client.Entities
             }
             else
             {
+                
                 Position += Direction * Speed;
                 int index = (int)Position.X / 50 + ((int)Position.Y / 50) * Map.Map.Size.X;
                 isRemoved = (index < Game1.MapTiles.Length && index > -1 && Game1.MapTiles[index] is null);

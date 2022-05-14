@@ -12,7 +12,7 @@ namespace Map
         /// </summary>
         public static Point Size;
         static byte[] byteMap;
-        private static void MapWriter(byte[] map, int width)
+        private static void Save(byte[] map, int width)
         {
             using (FileStream stream = File.OpenWrite("map.json"))
             {
@@ -46,17 +46,9 @@ namespace Map
                     Game1.MapBlocks[i].Y = 1;
                     continue;
                 }
-                if (Game1.MapTiles[i] != null)
-                {
-                    Game1.MapTiles[i].SrcRect.X = 16 * (number % 5); // 16 is the px width of 1 tile
-                    Game1.MapTiles[i].SrcRect.Y = 16 * (int)(number * .2f);
-                }
-                else
-                {
                     Game1.MapTiles[i] = new Tile();
-                    Game1.MapTiles[i].SrcRect.X = 16 * (number % 5); // 16 is the px width of 1 tile
-                    Game1.MapTiles[i].SrcRect.Y = 16 * (int)(number * .2f);
-                }
+                    Game1.MapTiles[i].SrcRect.X *= (number % 5); // 16 is the px width of 1 tile
+                    Game1.MapTiles[i].SrcRect.Y *= (int)(number * .2f);
 
             }
         }

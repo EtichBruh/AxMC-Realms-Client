@@ -12,10 +12,10 @@ namespace nekoT
         public Vector2 Direction;
         public Vector2 Position;
         public Vector2 Origin { get; private set; }
-        public bool isRemoved;
         public float Rotation;
         public int CurrentFrame,PreviousFrame = 0;
         public int Width, Height = 1;
+        public bool isRemoved;
         public SpriteEffects Effect;
         protected Rectangle _srcRect;
         public SpriteAtlas(Texture2D spritesheet, int rows, int columns, int frame)
@@ -53,7 +53,8 @@ namespace nekoT
         #endregion
         public void Draw(SpriteBatch spritebatch)
         {
-            spritebatch.Draw(Texture, new((int)Position.X, (int)Position.Y, Width, Height), _srcRect, Color.White, Rotation, Origin, Effect, 1);
+            spritebatch.Draw(Texture, new((int)Position.X, (int)Position.Y, Width, Height),
+                _srcRect, Color.White, Rotation, Origin, Effect, 1);
         }
     }
 }

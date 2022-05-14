@@ -7,7 +7,6 @@ namespace Map
     public class Tile
     {
         public static Texture2D TileSet;
-        public static Vector2 SharedPos = Vector2.Zero;
-        public Rectangle SrcRect = new(0,0,16,16);
+        public Rectangle SrcRect = new(16,16,16,16);
     }
 }

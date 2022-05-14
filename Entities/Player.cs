@@ -20,17 +20,28 @@ namespace AxMC_Realms_Client.Entities
         public static ProgressBar HPbar;
         int HP = 1000;
         int[] Stats = { 2000, 1, 20 };
+        double AnimTimer = 1;
+        Point[] Frames;
 
         public Player(Texture2D spriteSheet, Texture2D BulletTexture) :
             base(spriteSheet, 3, 5, 0)
         {
             Input.setKeys();
-            TiledPos = (Position / 50).ToPoint();
+            TiledPos = (Position * .02f).ToPoint();
             GetSquareOfSight();
             _bullet = new(BulletTexture);
             Width = 50;
             Height = 50;
-            HPbar = new(spriteSheet.GraphicsDevice);
+            HPbar = new() { Progress = HP };
+            HPbar.SetFactor(Stats[0]);
+            int columns = 5;
+            int rows = 3;
+            Frames = new Point[columns * rows];
+            for(int i = 0; i < Frames.Length; i++)
+            {
+                Frames[i].X = _srcRect.Width * (i % columns);
+                Frames[i].Y = _srcRect.Height * (i / columns);
+            }
         }
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
@@ -39,8 +50,7 @@ namespace AxMC_Realms_Client.Entities
             {
                 if (Game1._bullets[i].parent is Enemy && (Game1._bullets[i].Position - Position).LengthSquared() <= 2500)
                 {
-                    HP--;
-                    HPbar.ProgressValue = HP / (Stats[0] / 100);
+                    HPbar.Progress = HP--;
                     Game1._bullets.RemoveAt(i);
                     i--;
                 }
@@ -50,14 +60,21 @@ namespace AxMC_Realms_Client.Entities
             {
                 Move(gameTime);
                 Enemy.NearestPlayer = Position;
-                HPbar.Update((int)Position.X, (int)(Position.Y + Height * 0.5f));
+                HPbar.Update(Position.X, Position.Y + Height * 0.5f);
                 Shoot(spritesToAdd);
                 if (PreviousFrame != CurrentFrame)
                 {
-                    var columns = (Texture.Width / _srcRect.Width);
-                    _srcRect.X = _srcRect.Width * (CurrentFrame % columns);
-                    _srcRect.Y = _srcRect.Height * (CurrentFrame / columns);
+                    _srcRect.Location = Frames[CurrentFrame];
+                    //AnimTimer = 1;
                 }
+                /*if(PreviousFrame == CurrentFrame && CurrentFrame != 1)
+                {
+                    AnimTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+                }
+                if(AnimTimer <= 0)
+                {
+                    CurrentFrame += 1;
+                }*/
                 RotateZoom();
             }
         }
@@ -66,26 +83,33 @@ namespace AxMC_Realms_Client.Entities
             if (Input.KState.IsKeyDown(Input.MoveDown))
             {
                 Direction.Y = 1;
-                CurrentFrame = 5;
-                Effect = SpriteEffects.None;
+
+                    CurrentFrame = 5;
+                    Effect = SpriteEffects.None;
+                
             }
             if (Input.KState.IsKeyDown(Input.MoveUp))
             {
                 Direction.Y = -1;
-                CurrentFrame = 10;
-                Effect = SpriteEffects.None;
+
+                    CurrentFrame = 10;
+                    Effect = SpriteEffects.None;
+                
             }
             if (Input.KState.IsKeyDown(Input.MoveLeft))
             {
                 Direction.X = -1;
-                CurrentFrame = 0;
-                Effect = SpriteEffects.FlipHorizontally;
+
+                    CurrentFrame = 0;
+                    Effect = SpriteEffects.FlipHorizontally;
+
             }
             if (Input.KState.IsKeyDown(Input.MoveRight))
             {
                 Direction.X = 1;
-                CurrentFrame = 0;
-                Effect = SpriteEffects.None;
+                    CurrentFrame = 0;
+                    Effect = SpriteEffects.None;
+                
             }
             if (Direction != Vector2.Zero)
             {
@@ -151,12 +175,12 @@ namespace AxMC_Realms_Client.Entities
                 if (b.Rotation > 0 && b.Rotation < Bullet.TexOffset *2)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 4;
+                    CurrentFrame = 3;
                 }
                 else if (b.Rotation > Bullet.TexOffset *2&& b.Rotation < Bullet.TexOffset * 4)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 9;
+                    CurrentFrame = 8;
                 }
                 else if (b.Rotation < 0 && b.Rotation > -Bullet.TexOffset *2)
                 {
@@ -166,10 +190,14 @@ namespace AxMC_Realms_Client.Entities
                 else
                 {
                     Effect = SpriteEffects.FlipHorizontally;
-                    CurrentFrame = 4;
+                    CurrentFrame = 3;
+                }
+                if(PreviousFrame == CurrentFrame)
+                {
+                    CurrentFrame++;
                 }
                 b.Speed = 5;
-                b.LifeSpan = 2;
+                b.LifeSpan = 4;
                 b.parent = this;
                 spritesToAdd.Add(b);
                 //_spawnedBullets += 0.1f;
@@ -199,21 +227,24 @@ namespace AxMC_Realms_Client.Entities
             if (Input.KState.IsKeyDown(Input.ZoomOut))
             {
                 Camera.CamZoom -= 0.2f;
+                Camera.CamZoom = Camera.CamZoom <= 0.2f ? Camera.CamZoom = 0.2f  : Camera.CamZoom;
             }
             if (Input.KState.IsKeyDown(Input.RotateCameraLeft))
             {
-                Camera.RotDegr -= MathHelper.ToRadians(1);
+                Camera.RotDegr += 0.017453292f;
+                Camera.RotDegr = Camera.RotDegr >= 360 ? 0 : Camera.RotDegr;
                 Rotation = -Camera.RotDegr;
             }
             if (Input.KState.IsKeyDown(Input.RotateCameraRight))
             {
-                Camera.RotDegr += MathHelper.ToRadians(1);
+                Camera.RotDegr -= 0.017453292f;
                 Rotation = -Camera.RotDegr;
             }
             if (Input.KState.IsKeyDown(Input.ResetRotation))
             {
                 Camera.RotDegr = 0;
                 Rotation = 0;
+                Camera.CamZoom = 1;
             }
         }
     }
