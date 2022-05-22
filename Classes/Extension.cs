@@ -48,6 +48,13 @@ namespace nekoT
         /// <returns><paramref name="a"/> with components multiplied by <paramref name="b"/></returns>
         public static Point MultiplyBy(this Point a, int b) { a.X *= b; a.Y *= b; return a; }
         /// <summary>
+        /// Multiplies <see cref="Microsoft.Xna.Framework.Point"/> components by <paramref name="b"/>
+        /// </summary>
+        /// <param name="a">Point</param>
+        /// <param name="b">Multiply value</param>
+        /// <returns><paramref name="a"/> with components multiplied by <paramref name="b"/></returns>
+        public static Point MultiplyBy(this Point a, float b) { a.X = (int)(a.X * b); a.Y = (int)(a.Y* b); return a; }
+        /// <summary>
         /// Divides <see cref="Microsoft.Xna.Framework.Point"/> components by <paramref name="b"/>
         /// </summary>
         /// <param name="a">Point</param>

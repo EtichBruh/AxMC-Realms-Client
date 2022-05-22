@@ -12,6 +12,7 @@ namespace AxMC_Realms_Client.Entities
         public double LifeSpan;
         public float Speed;
         public const float TexOffset = 0.7853982f; //MathHelper.ToRadians(45)
+        public int Damage = 0;
 
         public Bullet(Texture2D spriteSheet)
         : base(spriteSheet, 1, 1, 0)
@@ -29,6 +30,7 @@ namespace AxMC_Realms_Client.Entities
             {
                 
                 Position += Direction * Speed;
+                if(Position.X < 0 || Position.Y < 0) { isRemoved = true;return; }
                 int index = (int)Position.X / 50 + ((int)Position.Y / 50) * Map.Map.Size.X;
                 isRemoved = (index < Game1.MapTiles.Length && index > -1 && Game1.MapTiles[index] is null);
             }

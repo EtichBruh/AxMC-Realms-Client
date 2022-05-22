@@ -19,7 +19,6 @@ namespace AxMC_Realms_Client.UI
 
         public void Draw(SpriteBatch sb)
         {
-            sb.Draw(UI.SlotSprite, Rect, null, Color.White, 0, new Vector2(16, 16), 0, 0);
 
             Rect.Width = 48;
             Rect.Height = Rect.Width;

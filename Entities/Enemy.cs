@@ -14,6 +14,7 @@ namespace AxMC_Realms_Client.Entities
         byte id = 0;
         int MaxHP = 100,HP = 100;
         public static Vector2 NearestPlayer;
+        public static Texture2D tempText;
         public ProgressBar HPbar;
         private double timer,timera = 1;
 
@@ -33,7 +34,7 @@ namespace AxMC_Realms_Client.Entities
             for (int i = 0; i < Game1._bullets.Length; i++)
             {
                 if (Game1._bullets[i].parent is not Enemy && (Game1._bullets[i].Position - Position).LengthSquared() <= 2500) {
-                    HPbar.Progress = HP--;
+                    HPbar.Progress = HP-= Game1._bullets[i].Damage;
                     Game1._bullets.RemoveAt(i);
                     i--;
                 }
@@ -48,6 +49,10 @@ namespace AxMC_Realms_Client.Entities
                     break; }
             }
             timer -= gameTime.ElapsedGameTime.TotalSeconds;
+            if(timer < 0.8 && CurrentFrame == 4 || CurrentFrame == 9 || CurrentFrame == 14)
+            {
+                CurrentFrame--;
+            }
             if (timer <= 0)
             {
                 timer = timera;
@@ -72,26 +77,22 @@ namespace AxMC_Realms_Client.Entities
                 if (b.Rotation > 0 && b.Rotation < Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 3;
+                    CurrentFrame = 4;
                 }
                 else if (b.Rotation > Bullet.TexOffset * 2 && b.Rotation < Bullet.TexOffset * 4)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 8;
+                    CurrentFrame = 9;
                 }
                 else if (b.Rotation < 0 && b.Rotation > -Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 13;
+                    CurrentFrame = 14;
                 }
                 else
                 {
                     Effect = SpriteEffects.FlipHorizontally;
-                    CurrentFrame = 3;
-                }
-                if (PreviousFrame == CurrentFrame)
-                {
-                    CurrentFrame++;
+                    CurrentFrame = 4;
                 }
                 b.Speed = 5;
                 b.LifeSpan = 2;
@@ -140,6 +141,7 @@ namespace AxMC_Realms_Client.Entities
                 b.Speed = 5;
                 b.LifeSpan = 2;
                 b.parent = this;
+                b.Damage = 27;
                 spritesToAdd.Add(b);
                 //_spawnedBullets += 0.1f;
             }

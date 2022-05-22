@@ -7,6 +7,6 @@ namespace Map
     public class Tile
     {
         public static Texture2D TileSet;
-        public Rectangle SrcRect = new(16,16,16,16);
+        public Rectangle SrcRect = new(16,0,16,16);
     }
 }

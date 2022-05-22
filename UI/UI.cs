@@ -4,6 +4,7 @@ using AxMC_Realms_Client.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using nekoT;
+using Nez;
 using System;
 using System.Collections;
 
@@ -11,44 +12,45 @@ namespace AxMC_Realms_Client.UI
 {
     public class UI
     {
-        public static Texture2D SlotSprite, EquipmentSlotSprite, BagUI, PEnterUI;
+        public Texture2D SlotSprite, EquipmentSlotSprite, BagUI, PEnterUI, ExpJar;
         public Rectangle BagUISRect,BagUIRect = new(0,0,64,32);
+        public Rectangle ExpJarRect = new(0, 0, 32, 92);
         public Rectangle PEnterUIRect = new(0,0,32,16);
         public ProgressBar HPBar, MPBar;
         Slot[] Invetory = new Slot[4];
         Slot[] Equipment = new Slot[4];
-        public UI(int SWidth,int SHeight, Texture2D _slots, Texture2D _Eslots, Texture2D bagui, Texture2D penterui)
+        public UI(int swidth,int sheight,Texture2D slot, Texture2D eqslot, Texture2D bag, Texture2D PortalEnter, Texture2D expjar)
         {
-            SlotSprite = _slots;
-            EquipmentSlotSprite = _Eslots;
-            BagUI = bagui;
-            PEnterUI = penterui;
-            SWidth /= 2;
-            int SHeightC = (int)(SHeight / 1.25);// Height center + half of center
+            SlotSprite = slot;
+            EquipmentSlotSprite = eqslot;
+            BagUI = bag;
+            PEnterUI = PortalEnter;
+            ExpJar = expjar;
             BagUISRect = BagUIRect;
-            BagUIRect.X = SWidth;
-            BagUIRect.Y = SHeight - BagUIRect.Height;
-            for (int x = 0; x < Invetory.Length; x++)
+            for(int i =0;i < Invetory.Length; i++)
             {
-                Invetory[x] = new();
-                Invetory[x].Rect.Y = SHeightC;
-                Invetory[x].Rect.X = (x-1) * Invetory[x].Rect.Width - Invetory[x].Rect.Width/2 + SWidth ;
+                Invetory[i] = new();
             }
+            Resize(swidth, sheight);
         }
         public void Resize(int SWidth,int SHeight)
         {
             SWidth /= 2;
 
-            int screenHCenter = (int)(SHeight * 0.8f);
+            int sHCenter = (int)(SHeight * 0.8f);
             BagUIRect.X = SWidth;
             BagUIRect.Y = SHeight - BagUIRect.Height;
+            var smth = -Invetory[0].Rect.Width / 2 + SWidth;
             for (int x = 0; x < Invetory.Length; x++)
             {
-                Invetory[x].Rect.Y = screenHCenter;
-                Invetory[x].Rect.X = (x-1) * (Invetory[x].Rect.Width) - Invetory[x].Rect.Width/2 + SWidth;
+                Invetory[x].Rect.Y = sHCenter;
+                Invetory[x].Rect.X = (x-1) * (Invetory[x].Rect.Width) + smth;
             }
+            var temp = Invetory[0].Rect.Size.MultiplyBy(.5f);
+            ExpJarRect.X = Invetory[0].Rect.X - temp.X - ExpJar.Width;
+            ExpJarRect.Y = Invetory[0].Rect.Y + temp.Y - ExpJar.Height;
         }
-        public void Update()
+        public void Update(FastList<SpriteAtlas> entities)
         {
             HoveringOnSlot();
             if(BasicEntity.NInteract != -1 && BasicEntity.InteractEnt[BasicEntity.NInteract] is Portal)
@@ -57,14 +59,16 @@ namespace AxMC_Realms_Client.UI
                     PEnterUIRect.Intersects(new Rectangle(Input.MState.Position, new Point(1, 1))))
                 {
                     string a = ((Map.Maps)((Portal)BasicEntity.InteractEnt[BasicEntity.NInteract]).id).ToString();
-                    Map.Map.Load(a + ".json");
+                    Map.Map.Load(a, entities);
                 }
             }
         }
         public void Draw(SpriteBatch sb)
         {
+            sb.Draw(ExpJar, ExpJarRect, Color.White);
             for(int i = 0; i < Invetory.Length; i++)
             {
+                sb.Draw(SlotSprite, Invetory[i].Rect, null, Color.White, 0, new Vector2(16, 16), 0, 0);
                 Invetory[i].Draw(sb);
             }
             if(BasicEntity.NInteract != -1 )
