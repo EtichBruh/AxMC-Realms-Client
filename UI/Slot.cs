@@ -11,7 +11,7 @@ namespace AxMC_Realms_Client.UI
 {
     class Slot
     {
-        Item slotitem = new();
+        public Item slotitem;
         public Rectangle Rect = new(0,0,64,64);
         public static Rectangle SrcRect = new(0,0,16,16);
         public bool mouseHoverOn;

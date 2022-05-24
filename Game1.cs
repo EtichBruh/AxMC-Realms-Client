@@ -147,7 +147,8 @@ namespace AxMC_Realms_Client
                 Content.Load<Texture2D>("slotequip"),
                 Content.Load<Texture2D>("DropBagUI"),
                 Content.Load<Texture2D>("EnterButton"),
-                Content.Load<Texture2D>("ExpirienceJar"));
+                Content.Load<Texture2D>("ExpirienceJar"),
+                Content.Load<Texture2D>("StatIcons"));
             // TODO: use this.Content to load your game content here
         }
 
@@ -305,8 +306,9 @@ namespace AxMC_Realms_Client
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             _spriteBatch.DrawString(Arial, Math.Round(1f / gameTime.ElapsedGameTime.TotalSeconds).ToString(), Vector2.Zero, Color.IndianRed, 0, Vector2.Zero, 0.16f, 0, 0);
-
             _UI.Draw(_spriteBatch);
+
+
 
             _spriteBatch.End();
             /*cube.BasiceCubeEff.View = _viewMatrix * Matrix.CreateTranslation(-_sprites[0].Position.X, _sprites[0].Position.Y, 0) * Matrix.CreateScale(Camera.CamZoom);
