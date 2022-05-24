@@ -29,25 +29,30 @@ namespace AxMC_Realms_Client.Entities
 
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
+
+            for (int i = 0; i < Game1._sprites.Length; i++)
+            {
+                if (Game1._sprites[i] is not Bullet) continue;
+                Bullet b = (Bullet)Game1._sprites[i];
+                if (b.parent is not Enemy && (b.Position - Position).LengthSquared() <= 2500) {
+                    HPbar.Progress = HP-= b.Damage;
+                    isRemoved = (HP <= 0);
+                    Game1._sprites[i].isRemoved = true;
+                    if (isRemoved)
+                    {
+                        BasicEntity.InteractEnt.Add(new Bag((int)Position.X, (int)Position.Y));
+                        Random r = new();
+                        Position.X -= 25;
+                        Position.Y -= 25;
+                        BasicEntity.InteractEnt.Add(new Portal(r.Next((int)Position.X, (int)Position.X + 50), r.Next((int)Position.Y, (int)Position.Y + 50)));
+                        Player.XP += 10;
+                        Dispose();
+                        return;
+                    }
+                }
+            }
             PreviousFrame = CurrentFrame;
             Rotation = -Camera.RotDegr;
-            for (int i = 0; i < Game1._bullets.Length; i++)
-            {
-                if (Game1._bullets[i].parent is not Enemy && (Game1._bullets[i].Position - Position).LengthSquared() <= 2500) {
-                    HPbar.Progress = HP-= Game1._bullets[i].Damage;
-                    Game1._bullets.RemoveAt(i);
-                    i--;
-                }
-                if (isRemoved = (HP <= 0)) {
-                    
-                    BasicEntity.InteractEnt.Add(new Bag((int)Position.X, (int)Position.Y));
-                    Random r = new();
-                    Position.X -= 25;
-                    Position.Y -= 25;
-                    BasicEntity.InteractEnt.Add(new Portal(r.Next((int)Position.X,(int)Position.X + 50), r.Next((int)Position.Y, (int)Position.Y + 50)));
-                    Dispose();
-                    break; }
-            }
             timer -= gameTime.ElapsedGameTime.TotalSeconds;
             if(timer < 0.8 && CurrentFrame == 4 || CurrentFrame == 9 || CurrentFrame == 14)
             {

@@ -11,13 +11,13 @@ namespace AxMC_Realms_Client.Entities
     {
         public Item[] items;
         //public bool isChoosed;
-        public static Texture2D SpriteSheet;
         private int[] collisionMask = new int[16*14];
         public Bag(int x, int y)
         {
+            SpriteSheetID = 0; // Bag spriteSheet
             SrcRect = new(0, 0, 16, 14);
             Rect = new(0, 0, 32, 28);
-            items = new Item[3];
+            items = new Item[11];
             (Rect.X, Rect.Y )= (x, y);
            // GetCollisionMask(SpriteSheet, 0, 0);
         }

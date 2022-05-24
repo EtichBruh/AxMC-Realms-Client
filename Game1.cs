@@ -20,13 +20,13 @@ namespace AxMC_Realms_Client
     public class Game1 : Game
     {
 
-        public static FastList<Bullet> _bullets;
+        //public static FastList<Bullet> _bullets;
         public static Tile[] MapTiles;
         public static Vector2[] NetworkPlayers, MapBlocks;
         public static Matrix _projectionMatrix;
         public static SpriteFont Arial;
 
-        private FastList<SpriteAtlas> _sprites;
+        public static FastList<SpriteAtlas> _sprites;
         private List<SpriteAtlas> _spritesToAdd;
         private Effect _outline, _colorMask;
         private GraphicsDeviceManager _graphics;
@@ -34,12 +34,31 @@ namespace AxMC_Realms_Client
 
         Model model;
         UI.UI _UI;
-        Discord.Discord ds = new Discord.Discord(975495189948923975, 0); // (ulong)Discord.CreateFlags.Default;
-        Discord.Activity activity = new()
+
+        Discord.Discord ds = new(975495189948923975, 0); // (ulong)Discord.CreateFlags.Default;
+        Activity activity = new()
         {
             State = "Playing in world Ship",
-            Details = "nekoT, 99999 Fame "
-            
+            Details = "nekoT, 99999 Fame ",
+
+            Timestamps =
+            {
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+            },
+
+            Assets =
+            {
+                LargeImage = "logo",
+                LargeText = "Sussy Game",
+                SmallImage = "crewmate",
+                SmallText = "Crewmate - LVL 1"
+            },
+
+            Party =
+            {
+                Id = "ae488379-351d-4a4f-ad32-2b9b01c91657",
+                Size = {CurrentSize = 1,MaxSize = 2},
+            }
         };
 
         //private string[] WindowTitleAddition = new string[3] { "ZAMN!", "Daaamn what you know about rollin down in the deep?", "13yo kid moment" };
@@ -47,44 +66,40 @@ namespace AxMC_Realms_Client
         {
 
             _graphics = new GraphicsDeviceManager(this);
-            Random rand = new();
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += Window_ClientSizeChanged;
+
             //Window.Title = Window.Title + ": " + WindowTitleAddition[rand.Next(0, 2)];
         }
 
         protected override void Initialize()
         {
-
             // TODO: Add your initialization logic here
-            //cube = new(GraphicsDevice);
+            _graphics.PreferredBackBufferWidth = 900;
+            _graphics.PreferredBackBufferHeight = 696;
+            _graphics.ApplyChanges();
             ProgressBar.Init(GraphicsDevice);
 
             _spritesToAdd = new List<SpriteAtlas>();
             _sprites = new FastList<SpriteAtlas>();
-            _bullets = new FastList<Bullet>();
-            Game1.MapTiles = Array.Empty<Tile>();
-            _graphics.PreferredBackBufferWidth = 900;
-            _graphics.PreferredBackBufferHeight = 696;
-            _graphics.ApplyChanges();
+            MapTiles = Array.Empty<Tile>();
 
             var sWidth = GraphicsDevice.Viewport.Width * .01f; // its 1 / (50 * 2), before it was / 50 / 2
             var sHeight = GraphicsDevice.Viewport.Height * 0.0089445438282648f;// its 1 / (55.9 * 2), before it was / 55.9 / 2
             _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, -200f, 5000f);
             Camera.View = GraphicsDevice.Viewport;
-            ds.ActivityManagerInstance = ds.GetActivityManager();
-            activity.Timestamps.Start = DateTimeOffset.Now.ToUnixTimeSeconds();//1652655840
-                                                                                    //16526557780
-            activity.Assets.LargeImage = "logo";
-            activity.Assets.LargeText = "Sussy game";
-            activity.Assets.SmallImage = "crewmate";
-            activity.Assets.SmallText = "Crewmate - lvl 1";
-            activity.Party.Id = "ae488379-351d-4a4f-ad32-2b9b01c91657";
-            activity.Party.Size = new PartySize() { CurrentSize = 1, MaxSize = 1 };
 
-            //activity.Secrets.Join = "MTI4NzM0OjFpMmhuZToxMjMxMjM= ";
+            ds.ActivityManagerInstance = ds.GetActivityManager();
+            //activity.Timestamps.Start = DateTimeOffset.Now.ToUnixTimeSeconds();
+
+           // activity.Assets.LargeImage = "logo";
+            //activity.Assets.LargeText = "Sussy game";
+            //activity.Assets.SmallImage = "crewmate";
+            //activity.Assets.SmallText = "Crewmate - lvl 1";
+            //activity.Party.Id = "ae488379-351d-4a4f-ad32-2b9b01c91657";
+           // activity.Party.Size = new PartySize() { CurrentSize = 1 };
 
             ds.ActivityManagerInstance.UpdateActivity(activity, ActivityCheck);
 
@@ -98,38 +113,22 @@ namespace AxMC_Realms_Client
         {
             if (r != Result.Ok)
             {
-                Console.WriteLine("something wrong");
+                Console.WriteLine("Result not Ok");
             }
         }
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+
             Mouse.SetCursor(MouseCursor.FromTexture2D(Content.Load<Texture2D>("cursor"), 16, 16));
 
+
             model = Content.Load<Model>("Wall");
-            ((BasicEffect)model.Meshes[0].Effects[0]).TextureEnabled = true;
-            ((BasicEffect)model.Meshes[0].Effects[0]).Texture = Content.Load<Texture2D>("bedrock");
-            ((BasicEffect)model.Meshes[0].Effects[0]).View = Matrix.CreateLookAt(new Vector3(0, 45, 90), Vector3.Zero, Vector3.UnitZ);
-            /*0,5019685
--0,5019685
-2,007874
-0
-0
-1
-0,99990004
-0,9999
-0,5019685
-0,5019685
-2,007874
-0
-0
-1
-0,99990004
-9,995699E-05
--0,5019685
-0,5019685
-2,007874
-0*/
+            var basiceff = ((BasicEffect)model.Meshes[0].Effects[0]);
+            basiceff.TextureEnabled = true;
+            basiceff.Texture = Content.Load<Texture2D>("bedrock");
+            basiceff.View = Matrix.CreateLookAt(new Vector3(0, 45, 90), Vector3.Zero, Vector3.UnitZ);
+
             _outline = Content.Load<Effect>("outline");
             _colorMask = Content.Load<Effect>("ColorMask");
             Arial = Content.Load<SpriteFont>("File");
@@ -140,10 +139,7 @@ namespace AxMC_Realms_Client
             _sprites.Add(new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("ElecticBullet")));// Order here matters
 
             Item.SpriteSheet = Content.Load<Texture2D>("DripJacket");
-            Bag.SpriteSheet = Content.Load<Texture2D>("DripSusBag");
-            Portal.SpriteSheet = Content.Load<Texture2D>("SussyPortals");
-
-            //_spritesToAdd.Add(new Enemy(Content.Load<Texture2D>("ImpostorMask")) { Position = new(200, 0) });
+            BasicEntity.SpriteSheet = new Texture2D[] { Content.Load<Texture2D>("DripSusBag"), Content.Load<Texture2D>("SussyPortals")};
 
             _UI = new(GraphicsDevice.Viewport.Width,
                 GraphicsDevice.Viewport.Height,
@@ -169,22 +165,17 @@ namespace AxMC_Realms_Client
             {
                 Input.KState = Keyboard.GetState();
                 Input.MState = Mouse.GetState();
-                if (_spritesToAdd.Count != 0) foreach (var item in _spritesToAdd)
-                    {
-                        if (item is not Bullet) _sprites.Add(item);
-                        else
-                        {
-                            _bullets.Add((Bullet)item);
-                        }
-                    }
-                _spritesToAdd.Clear();
+
+                if (_spritesToAdd.Count != 0) foreach (var item in _spritesToAdd) _sprites.Add(item);
+
+                _spritesToAdd.Clear();/*
                 for (int i = 0; i < _bullets.Length; i++)
                 {
                     _bullets[i].Update(gameTime, _spritesToAdd);
                     if (!_bullets[i].isRemoved) continue;
                     _bullets.RemoveAt(i);
                     i--;
-                }
+                }*/
                 for (int i = 0; i < _sprites.Length; i++)
                 {
                     _sprites[i].Update(gameTime, _spritesToAdd);
@@ -192,15 +183,11 @@ namespace AxMC_Realms_Client
                     _sprites.RemoveAt(i);
                     i--;
                 }
+
                 _UI.Update(_sprites);
                 Camera.Follow(_sprites[0].Position);
-                if (OperatingSystem.IsWindows())
-                {
-                    if (Input.KState.IsKeyDown(Keys.NumPad5))
-                    {
-                        TakeScreenshot(gameTime);
-                    }
-                }
+
+                if (OperatingSystem.IsWindows() && Input.KState.IsKeyDown(Keys.NumPad5)) TakeScreenshot(gameTime);
             }
             // TODO: Add your update logic here
 
@@ -209,6 +196,7 @@ namespace AxMC_Realms_Client
         protected override void OnExiting(object sender, EventArgs args)
         {
             new HttpClient().GetStringAsync("https://api.countapi.xyz/update/AxMCRealms/players?amount=1");
+
             base.OnExiting(sender, args);
         }
 
@@ -245,14 +233,15 @@ namespace AxMC_Realms_Client
             bitmap.UnlockBits(bmData);
             bitmap.Save("Screenshot.png", System.Drawing.Imaging.ImageFormat.Png);
         }
-        #endregion
-        const float factor = 1f / 2.55f;
+        #endregion //Code taken from stackoverflow
+        const float tcfactor = 1f / 2.55f; // tile color factor
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
             _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp);
+
             for (int i = 0; i < Player.xyCount.X; i++)
             {
                 for (int j = 0; j < Player.xyCount.Y; j++)
@@ -261,10 +250,11 @@ namespace AxMC_Realms_Client
                     if (index > MapTiles.Length) continue;
                     if (MapTiles[index] is null) continue;
                     Vector2 pos = new Vector2(Player.TiledPos.X + i, Player.TiledPos.Y + j) * 50;
-                    byte col = (byte)(255 - (Math.Abs((pos - _sprites[0].Position).Length()) * factor));
+                    byte col = (byte)(255 - (Math.Abs((pos - _sprites[0].Position).Length()) * tcfactor));
                     _spriteBatch.Draw(Tile.TileSet, pos, MapTiles[index].SrcRect, new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
                 }
             }
+
             if (NetworkPlayers != null)
             {
                 for (int i = 0; i < NetworkPlayers.Length; i++)
@@ -272,7 +262,16 @@ namespace AxMC_Realms_Client
                     _spriteBatch.Draw(_sprites[0].Texture, NetworkPlayers[i], new(0, 0, 9, 9), Color.White);
                 }
             }
-            for (int i = 0; i < _sprites.Length; i++)
+
+            for (int i = 0; i < BasicEntity.InteractEnt.Length; i++)
+            {
+                BasicEntity.InteractEnt[i].Draw(_spriteBatch);
+            }/*
+            for (int i = 0; i < _bullets.Length; i++)
+            {
+                _bullets[i].Draw(_spriteBatch);
+            }*/
+            for (int i = _sprites.Length - 1; i > -1; i--)
             {
                 _sprites[i].Draw(_spriteBatch);
                 if (_sprites[i] is Enemy e)
@@ -280,29 +279,15 @@ namespace AxMC_Realms_Client
                     e.HPbar.Draw(_spriteBatch);
                 }
             }
-            for (int i = 0; i < BasicEntity.InteractEnt.Length; i++)
-            {
-                if (BasicEntity.InteractEnt[i] is Bag)
-                {
-                    BasicEntity.InteractEnt[i].Draw(_spriteBatch, Bag.SpriteSheet);
-                }
-                else if (BasicEntity.InteractEnt[i] is Portal)
-                {
-                    BasicEntity.InteractEnt[i].Draw(_spriteBatch, Portal.SpriteSheet);
-                }
-
-            }
-            for (int i = 0; i < _bullets.Length; i++)
-            {
-                _bullets[i].Draw(_spriteBatch);
-            }
             Player.HPbar.Draw(_spriteBatch);
+
             _spriteBatch.End();
 
             var rot = Matrix.CreateRotationZ(-Camera.RotDegr);
             var ppos = _sprites[0].Position * 0.02f;
             var mesh = (BasicEffect)model.Meshes[0].Effects[0];
             mesh.Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
+
             for (int i = 0; i < Player.xyCount.X; i++)
             {
                 for (int j = 0; j < Player.xyCount.Y; j++)
@@ -316,8 +301,10 @@ namespace AxMC_Realms_Client
                     model.Meshes[0].Draw();
                 }
             }
+
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-            _spriteBatch.DrawString(Arial, Math.Round(1f / gameTime.ElapsedGameTime.TotalSeconds).ToString(), Vector2.Zero, Color.IndianRed);
+
+            _spriteBatch.DrawString(Arial, Math.Round(1f / gameTime.ElapsedGameTime.TotalSeconds).ToString(), Vector2.Zero, Color.IndianRed, 0, Vector2.Zero, 0.16f, 0, 0);
 
             _UI.Draw(_spriteBatch);
 

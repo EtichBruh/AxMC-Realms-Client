@@ -13,7 +13,7 @@ namespace AxMC_Realms_Client.Graphics
         public int Progress;
         float Factor;
         private Vector2 Pos;
-        private static Texture2D Pixel;
+        public static Texture2D Pixel;
         /// <summary>
         /// Making a pixel for bar if none was created before
         /// </summary>

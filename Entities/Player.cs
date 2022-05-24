@@ -17,8 +17,9 @@ namespace AxMC_Realms_Client.Entities
         public static Point xyCount;
         public static int SquareOfSightStartIndex;
         public static ProgressBar HPbar;
+        public static int XP;
         int HP = 1000;
-        int[] Stats = { 2000, 10, 20 };
+        int[] Stats = { 2000, 100, 20 };
         double AnimTimer = 1;
         Point[] Frames;
 
@@ -46,19 +47,21 @@ namespace AxMC_Realms_Client.Entities
         }
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
-            PreviousFrame = CurrentFrame;
-            for (int i = 0; i < Game1._bullets.Length; i++)
+            for (int i = 0; i < Game1._sprites.Length; i++)
             {
-                if (Game1._bullets[i].parent is Enemy && (Game1._bullets[i].Position - Position).LengthSquared() <= 2500)
+                if (Game1._sprites[i] is not Bullet) continue;
+                Bullet b = (Bullet)Game1._sprites[i];
+                if (b.parent is Enemy && (b.Position - Position).LengthSquared() <= 2500)
                 {
-                    HPbar.Progress = HP-= Game1._bullets[i].Damage;
-                    Game1._bullets.RemoveAt(i);
-                    i--;
+                    HPbar.Progress = HP-= b.Damage;
+                    isRemoved = (HP <= 0);
+                    b.isRemoved = true;
                 }
-                if (isRemoved = (HP <= 0)) break;
+                if (isRemoved) { break; }
             }
             if (!isRemoved)
             {
+                PreviousFrame = CurrentFrame;
                 Move(gameTime);
                 Enemy.NearestPlayer = Position;
                 HPbar.Update(Position.X, Position.Y + Height * 0.5f);

@@ -59,9 +59,10 @@ namespace Map
             {
                 byte number = byteMap[i];
                 if (number == 255) continue;
-                if(number == 6)
+                if(number == 5)
                 {
                     Game1.MapBlocks[i] = Vector2.One;
+                    continue;
                 }
                 Game1.MapTiles[i] = new Tile();
                 Game1.MapTiles[i].SrcRect.X = 16 * (number % 5);/* = new()
@@ -109,9 +110,10 @@ namespace Map
             {
                 byte number = byteMap[i];
                 if (number == 255) continue;
-                if (number == 6)
+                if (number == 5)
                 {
                     Game1.MapBlocks[i] = Vector2.One;
+                    continue;
                 }
                 Game1.MapTiles[i] = new Tile();
                 Game1.MapTiles[i].SrcRect.X = 16 * (number % 5);/* = new()

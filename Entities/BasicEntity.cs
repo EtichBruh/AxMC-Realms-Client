@@ -13,6 +13,8 @@ namespace AxMC_Realms_Client.Entities
 
     public abstract class BasicEntity
     {
+        public static Texture2D[] SpriteSheet;
+
         /// <summary>
         /// interactable entities
         /// </summary>
@@ -23,10 +25,11 @@ namespace AxMC_Realms_Client.Entities
         public static int NInteract = -1;
         public Rectangle SrcRect;
         public Rectangle Rect;
+        protected int SpriteSheetID = 0;// By default its bag 
 
-        public void Draw(SpriteBatch sb, Texture2D SSheet)
+        public void Draw(SpriteBatch sb)
         {
-            sb.Draw(SSheet, Rect, SrcRect, Color.White, -Camera.RotDegr, SrcRect.Size.ToVector2() *.5f, 0, 0);
+            sb.Draw(SpriteSheet[SpriteSheetID], Rect, SrcRect, Color.White, -Camera.RotDegr, SrcRect.Size.ToVector2() *.5f, 0, 0);
         }
     }
 }

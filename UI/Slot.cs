@@ -28,14 +28,14 @@ namespace AxMC_Realms_Client.UI
 
             if (mouseHoverOn && slotitem is not null)
             {
-                var a = Game1.Arial.MeasureString(slotitem.Description);
+                var a = Game1.Arial.MeasureString(slotitem.Description) *.01f;
                 a.X += 20;
                 a.Y += 20;
                 var r = Rect;
                 r.Width += (int)a.X;
                 r.Height += (int)a.Y;
                 a.Y = r.Height * .5f;
-                sb.DrawString(Game1.Arial, slotitem.Description,r.Location.ToVector2() - a ,Color.White);
+                sb.DrawString(Game1.Arial, slotitem.Description,r.Location.ToVector2() - a ,Color.White,0, Vector2.Zero, 0.12f,0,0);
                 /*Corner.X = 16;
                 Corner.Width = 10;
                 var a = Game1.Arial.MeasureString(slotitem.Description);

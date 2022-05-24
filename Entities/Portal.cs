@@ -10,10 +10,10 @@ namespace AxMC_Realms_Client.Entities
 {
     public class Portal : BasicEntity
     {
-        public static Texture2D SpriteSheet;
         public byte id = 1;
         public Portal(int x, int y)
         {
+            SpriteSheetID = 1; // Portal spritesheet
             Rect.X = x;
             Rect.Y = y;
             Rect.Width = 24;

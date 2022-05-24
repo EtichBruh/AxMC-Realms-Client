@@ -22,9 +22,9 @@ namespace AxMC_Realms_Client.Entities
         }
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
+            if (isRemoved == true) return;
             LifeSpan -= gameTime.ElapsedGameTime.TotalSeconds;
-            if (isRemoved = (LifeSpan <= 0)) {
-            
+            if (isRemoved = LifeSpan <= 0) {
             }
             else
             {
