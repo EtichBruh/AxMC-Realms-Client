@@ -127,13 +127,12 @@ namespace AxMC_Realms_Client
             Map.Map.Load("Ship", _spritesToAdd);// Order here matters
             _sprites.Add(new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("ElecticBullet")));// Order here matters
 
-            Item.SpriteSheet = Content.Load<Texture2D>("DripJacket");
+            Item.SpriteSheet = Content.Load<Texture2D>("Items");
             BasicEntity.SpriteSheet = new Texture2D[] { Content.Load<Texture2D>("DripSusBag"), Content.Load<Texture2D>("SussyPortals")};
 
             _UI = new(GraphicsDevice.Viewport.Width,
                 GraphicsDevice.Viewport.Height,
                 Content.Load<Texture2D>("slotconcept"),
-                Content.Load<Texture2D>("slotequip"),
                 Content.Load<Texture2D>("DropBagUI"),
                 Content.Load<Texture2D>("EnterButton"),
                 Content.Load<Texture2D>("ExpirienceJar"),

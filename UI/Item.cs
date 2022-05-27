@@ -9,9 +9,9 @@ namespace AxMC_Realms_Client.UI
 {
     public class Item
     {
-        int[] Stats = { 1, 2, 20 }; // HP Damage Speed
+        public int[] Stats = { 500, 50, 20, 10 }; // HP Damage agility armor
         public static Texture2D SpriteSheet;
-        //byte id = 0;
-        public string Description = "Wassup bois this is the first item";
+        public byte id = 0;
+        public static string[] Desc= new string[] { "Feel the Drip", "It feels you w power", "Sussy staff lmao" };
     }
 }

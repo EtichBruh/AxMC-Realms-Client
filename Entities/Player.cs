@@ -120,10 +120,11 @@ namespace AxMC_Realms_Client.Entities
                 if (Rotation != 0)
                 {
                     var rot = MathF.Atan2(Direction.Y, Direction.X) + Rotation;
-                    Direction.X = MathF.Cos(rot);
+                    Direction.X = MathF.Cos(rot);// agility / 20
                     Direction.Y = MathF.Sin(rot);
                 }
-                Position += Direction*(Stats[2] * 0.05f); // agility / 20
+                Direction *= Stats[2] * 0.05f;
+                Position += Direction; 
                 if (Position.X < 0 || Position.X > Map.Map.Size.X * 50) Position.X -= Direction.X;
                 if (Position.Y < 0 || Position.Y > Map.Map.Size.Y * 50) Position.Y -= Direction.Y;
                 TiledPos = (Position * .02f).ToPoint();

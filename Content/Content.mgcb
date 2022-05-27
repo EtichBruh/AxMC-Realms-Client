@@ -79,18 +79,6 @@
 /processorParam:TextureFormat=Color
 /build:cursor.png
 
-#begin DripJacket.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:DripJacket.png
-
 #begin DripSusBag.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -170,6 +158,18 @@
 /processorParam:TextureFormat=Color
 /build:ImpostorMask.png
 
+#begin Items.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Items.png
+
 #begin MCRTile.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -199,18 +199,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:slotconcept.png
-
-#begin slotequip.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:slotequip.png
 
 #begin StatIcons.png
 /importer:TextureImporter

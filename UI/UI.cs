@@ -10,7 +10,7 @@ namespace AxMC_Realms_Client.UI
 {
     public class UI
     {
-        public Texture2D SlotSprite, EquipmentSlotSprite, BagUI, PEnterUI, ExpJar, StatIcons;
+        public Texture2D SlotSprite, BagUI, PEnterUI, ExpJar, StatIcons;
 
         public Rectangle BagUISRect, BagUIRect = new(0, 0, 64, 32);
         public Rectangle ExpJarRect = new(0, 0, 32, 92);
@@ -19,15 +19,14 @@ namespace AxMC_Realms_Client.UI
 
         public ProgressBar HPBar, MPBar;
 
-        Slot[] Invetory = new Slot[4];
-        Slot[] Equipment = new Slot[4];
+        Slot[] Invetory = new Slot[8];
+        //Slot[] Equipment = new Slot[4];
 
         bool isDrag = false;
         int DraggingSlot;
-        public UI(int swidth, int sheight, Texture2D slot, Texture2D eqslot, Texture2D bag, Texture2D PortalEnter, Texture2D expjar, Texture2D stats)
+        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D PortalEnter, Texture2D expjar, Texture2D stats)
         {
             SlotSprite = slot;
-            EquipmentSlotSprite = eqslot;
             BagUI = bag;
             PEnterUI = PortalEnter;
             ExpJar = expjar;
@@ -35,8 +34,9 @@ namespace AxMC_Realms_Client.UI
             BagUISRect = BagUIRect;
             for (int i = 0; i < Invetory.Length; i++)
             {
-                Invetory[i] = new();
-                if (i == 0) Invetory[i].slotitem = new();
+                if (i > 3 && i < 7) Invetory[i] = new((byte)(i - 4));
+                else Invetory[i] = new();
+                Invetory[i].SrcRect.X = i < 4 ? 32 : 0;
             }
             Resize(swidth, sheight);
         }
@@ -53,13 +53,21 @@ namespace AxMC_Realms_Client.UI
             var smth = -Invetory[0].Rect.Width / 2 + SWidth;
             for (int x = 0; x < Invetory.Length; x++)
             {
-                Invetory[x].Rect.Y = sHCenter;
-                Invetory[x].Rect.X = (x - 1) * (Invetory[x].Rect.Width) + smth;
+                if (x < 4)
+                {
+                    Invetory[x].Rect.Y = sHCenter;
+                    Invetory[x].Rect.X = (x - 1) * (Invetory[x].Rect.Width) + smth;
+                }
+                else
+                {
+                    Invetory[x].Rect.Y = sHCenter + 48;
+                    Invetory[x].Rect.X = (x - 4 - 1) * (Invetory[x].Rect.Width) + smth;
+                }
             }
 
-            var temp = Invetory[0].Rect.Size.MultiplyBy(.5f);
-            ExpJarRect.X = Invetory[0].Rect.X - temp.X - ExpJar.Width;
-            ExpJarRect.Y = Invetory[0].Rect.Y + temp.Y - ExpJar.Height;
+            var temp = Invetory[4].Rect.Size.MultiplyBy(.5f);
+            ExpJarRect.X = Invetory[4].Rect.X - temp.X - ExpJar.Width;
+            ExpJarRect.Y = Invetory[4].Rect.Y + temp.Y - ExpJar.Height;
         }
         public void Update(FastList<SpriteAtlas> entities)
         {
@@ -98,9 +106,9 @@ namespace AxMC_Realms_Client.UI
 
             for (int i = 0; i < Invetory.Length; i++)
             {
-                sb.Draw(SlotSprite, Invetory[i].Rect, null, Color.White, 0, new Vector2(16, 16), 0, 0);
-                if (Invetory[i].slotitem == null) continue;
-                Invetory[i].Draw(sb); // this draws item, not slot ( i was surprised tho )
+                sb.Draw(SlotSprite, Invetory[i].Rect, Invetory[i].SrcRect, Color.White, 0, new Vector2(16, 16), 0, 0);
+                if (Invetory[i].slotitem != null) Invetory[i].Draw(sb);
+                // this draws item, not slot ( i was surprised tho )
             }
 
             if (BasicEntity.NInteract != -1)
@@ -123,7 +131,7 @@ namespace AxMC_Realms_Client.UI
 
                         BagUISRect.X = 17;
                         BagUIRect.Y += BagUISRect.Y = 2;
-                        BagUIRect.X = prevX + prevSW - 
+                        BagUIRect.X = prevX + prevSW -
                             (BagUIRect.Width = BagUIRect.Height = BagUISRect.Width = BagUISRect.Height = 30);// Get position after 1st segment + Set SourceRect to draw slot
 
                         Vector2 itempos = new Vector2(BagUIRect.X, BagUIRect.Y + BagUI.Height * .5f); // im not sure but its made to optimize
@@ -135,7 +143,7 @@ namespace AxMC_Realms_Client.UI
 
                             sb.Draw(Item.SpriteSheet,
                                     itempos,
-                                    Slot.SrcRect, Color.White, 0, new Vector2(8, 8), 1.75f, 0, 0); //Draw item
+                                    new(0, 0, 16, 16), Color.White, 0, new Vector2(8, 8), 1.75f, 0, 0); //Draw item
                         }
 
                         BagUISRect.X = BagUISRect.Y = 0; // reset rectangles back
@@ -149,6 +157,10 @@ namespace AxMC_Realms_Client.UI
                 }
                 //else sb.Draw(PEnterUI, PEnterUIRect, Color.White);
             }
+            if (isDrag)
+            {
+                sb.Draw(Item.SpriteSheet, Input.MState.Position.ToVector2(), new(16 * Invetory[DraggingSlot].slotitem.id, 0, 16, 16), Color.White, 0, new Vector2(8, 8), 2, 0, 0);
+            }
 
         }
         void HoveringOnSlot()
@@ -156,31 +168,32 @@ namespace AxMC_Realms_Client.UI
             var index = new Rectangle(Input.MState.Position, new Point(1, 1));
             for (int i = 0; i < Invetory.Length; i++)
             {
-                var r = Invetory[i].Rect;
-                r.X -= r.Width / 2; // its probably centred 
-                r.Y -= r.Height / 2;
+                var slot = Invetory[i];
+                    var r = slot.Rect;
+                    r.X -= r.Width / 2; // its probably centred 
+                    r.Y -= r.Height / 2;
                 if (r.Intersects(index))
                 {
-                    Invetory[i].mouseHoverOn = true;
-                    if (!isDrag && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                    slot.mouseHoverOn = true;
+                    if (!isDrag && slot.slotitem != null &&
+                    Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
                     {
                         isDrag = true;
                         DraggingSlot = i;
                     }
                     else if (isDrag && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
                     {
-                        var temp = Invetory[DraggingSlot].slotitem;
-                        Invetory[DraggingSlot].slotitem = Invetory[i].slotitem;
-                        Invetory[i].slotitem = temp;
+                        Item temp = Invetory[DraggingSlot].slotitem;
+                        Invetory[DraggingSlot].slotitem = slot.slotitem;
+                        slot.slotitem = temp;
                         isDrag = false;
+                        if (i < 4 && slot.slotitem != Invetory[DraggingSlot].slotitem) for(int j =0; j < Player.Stats.Length;j++) Player.Stats[j] += slot.slotitem.Stats[j];
+                        if (i >=4 && Invetory[DraggingSlot].slotitem != slot.slotitem) for(int j =0; j < Player.Stats.Length;j++) Player.Stats[j] -= slot.slotitem.Stats[j];
                     }
                 }
-
-                else { Invetory[i].mouseHoverOn = false; }
-                //else if (Equipment[i].mouseHoverOn = index == invetory[i].Rect.Location.DivideBy(60)) break;
+                else { slot.mouseHoverOn = false; }
+                    //else if (Equipment[i].mouseHoverOn = index == invetory[i].Rect.Location.DivideBy(60)) break;
+                }
             }
-
         }
-
     }
-}
