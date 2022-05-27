@@ -92,20 +92,9 @@ namespace AxMC_Realms_Client
             Camera.View = GraphicsDevice.Viewport;
 
             ds.ActivityManagerInstance = ds.GetActivityManager();
-            //activity.Timestamps.Start = DateTimeOffset.Now.ToUnixTimeSeconds();
-
-           // activity.Assets.LargeImage = "logo";
-            //activity.Assets.LargeText = "Sussy game";
-            //activity.Assets.SmallImage = "crewmate";
-            //activity.Assets.SmallText = "Crewmate - lvl 1";
-            //activity.Party.Id = "ae488379-351d-4a4f-ad32-2b9b01c91657";
-           // activity.Party.Size = new PartySize() { CurrentSize = 1 };
-
             ds.ActivityManagerInstance.UpdateActivity(activity, ActivityCheck);
 
-            var client = new HttpClient();
-            client.GetStringAsync("https://api.countapi.xyz/hit/AxMCRealms/visits");
-            client.GetStringAsync("https://api.countapi.xyz/update/AxMCRealms/players?amount=1");
+            new HttpClient().GetStringAsync("https://sus.7hemech.repl.co/join");
 
             base.Initialize();
         }
@@ -194,9 +183,10 @@ namespace AxMC_Realms_Client
 
             base.Update(gameTime);
         }
+
         protected override void OnExiting(object sender, EventArgs args)
         {
-            new HttpClient().GetStringAsync("https://api.countapi.xyz/update/AxMCRealms/players?amount=1");
+            new HttpClient().GetStringAsync("https://sus.7hemech.repl.co/leave");
 
             base.OnExiting(sender, args);
         }
@@ -238,9 +228,10 @@ namespace AxMC_Realms_Client
         const float tcfactor = 1f / 2.55f; // tile color factor
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
+            var ppos = _sprites[0].Position * 0.02f;
             _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp);
 
             for (int i = 0; i < Player.xyCount.X; i++)
@@ -251,7 +242,9 @@ namespace AxMC_Realms_Client
                     if (index > MapTiles.Length) continue;
                     if (MapTiles[index] is null) continue;
                     Vector2 pos = new Vector2(Player.TiledPos.X + i, Player.TiledPos.Y + j) * 50;
-                    byte col = (byte)(255 - (Math.Abs((pos - _sprites[0].Position).Length()) * tcfactor));
+                    var shade = (255 - (pos - _sprites[0].Position).Length() * tcfactor);
+                    shade = shade < 0 || shade > 255 ? 0 : shade;
+                    byte col =(byte)shade;
                     _spriteBatch.Draw(Tile.TileSet, pos, MapTiles[index].SrcRect, new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
                 }
             }
@@ -285,7 +278,6 @@ namespace AxMC_Realms_Client
             _spriteBatch.End();
 
             var rot = Matrix.CreateRotationZ(-Camera.RotDegr);
-            var ppos = _sprites[0].Position * 0.02f;
             var mesh = (BasicEffect)model.Meshes[0].Effects[0];
             mesh.Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
 

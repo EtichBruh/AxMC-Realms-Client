@@ -157,8 +157,8 @@ namespace AxMC_Realms_Client.UI
             for (int i = 0; i < Invetory.Length; i++)
             {
                 var r = Invetory[i].Rect;
-                r.X -= 32;
-                r.Y -= 32;
+                r.X -= r.Width / 2; // its probably centred 
+                r.Y -= r.Height / 2;
                 if (r.Intersects(index))
                 {
                     Invetory[i].mouseHoverOn = true;

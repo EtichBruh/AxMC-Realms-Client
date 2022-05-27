@@ -123,7 +123,7 @@ namespace AxMC_Realms_Client.Entities
                     Direction.X = MathF.Cos(rot);
                     Direction.Y = MathF.Sin(rot);
                 }
-                Position += Direction;
+                Position += Direction*(Stats[2] * 0.05f); // agility / 20
                 if (Position.X < 0 || Position.X > Map.Map.Size.X * 50) Position.X -= Direction.X;
                 if (Position.Y < 0 || Position.Y > Map.Map.Size.Y * 50) Position.Y -= Direction.Y;
                 TiledPos = (Position * .02f).ToPoint();
@@ -207,12 +207,14 @@ namespace AxMC_Realms_Client.Entities
                 AnimTimer = 1;
             }
         }
+        //const float RadiusFactor = 1f / 9f;
         /// <summary>
         /// Calculates the start index for square of sighte
         /// </summary>
         /// <returns>Start index of square of sight</returns>
-        private void GetSquareOfSight(int DrawRadius = 9)
+        private void GetSquareOfSight()
         {
+            int DrawRadius = (int)(9f / Camera.CamZoom);
             xyCount.X = Math.Min(DrawRadius, TiledPos.X) + Math.Min(DrawRadius + 1, Map.Map.Size.X - TiledPos.X);
             xyCount.Y = Math.Min(DrawRadius, TiledPos.Y) + Math.Min(DrawRadius + 1, Map.Map.Size.Y - TiledPos.Y);
 
@@ -226,17 +228,17 @@ namespace AxMC_Realms_Client.Entities
         {
             if (Input.KState.IsKeyDown(Input.ZoomIn))
             {
-                Camera.CamZoom += 0.2f;
+                Camera.CamZoom += 0.4f;
             }
             if (Input.KState.IsKeyDown(Input.ZoomOut))
             {
                 Camera.CamZoom -= 0.2f;
-                Camera.CamZoom = Camera.CamZoom <= 0.2f ? Camera.CamZoom = 0.2f : Camera.CamZoom;
+                Camera.CamZoom = Camera.CamZoom  <= 0.6f ? Camera.CamZoom = 0.6f : Camera.CamZoom;
             }
             if (Input.KState.IsKeyDown(Input.RotateCameraLeft))
             {
                 Camera.RotDegr += 0.017453292f;
-                Camera.RotDegr = Camera.RotDegr >= 360 ? 0 : Camera.RotDegr;
+                Camera.RotDegr = Camera.RotDegr  >= 360 ? 0 : Camera.RotDegr;
                 Rotation = -Camera.RotDegr;
             }
             if (Input.KState.IsKeyDown(Input.RotateCameraRight))

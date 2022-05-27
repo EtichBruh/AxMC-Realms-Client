@@ -12,7 +12,7 @@ namespace AxMC_Realms_Client.UI
     class Slot
     {
         public Item slotitem;
-        public Rectangle Rect = new(0,0,64,64);
+        public Rectangle Rect = new(0,0,48,48);
         public static Rectangle SrcRect = new(0,0,16,16);
         public bool mouseHoverOn;
         public bool DrawStats;
@@ -20,11 +20,9 @@ namespace AxMC_Realms_Client.UI
         public void Draw(SpriteBatch sb)
         {
 
-            Rect.Width = 48;
-            Rect.Height = Rect.Width;
+            Rect.Width = Rect.Height = 32;
             sb.Draw(Item.SpriteSheet, Rect, SrcRect, Color.White, 0, new Vector2(8, 8), 0, 0);
-            Rect.Width = 64;
-            Rect.Height = Rect.Width;
+            Rect.Width = Rect.Height = 48;
 
             if (mouseHoverOn && slotitem is not null)
             {
