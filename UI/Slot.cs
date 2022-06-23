@@ -11,46 +11,35 @@ namespace AxMC_Realms_Client.UI
 {
     class Slot
     {
-        public Item slotitem;
+        public Item item;
         public Rectangle Rect = new(0,0,48,48);
         public Rectangle SrcRect = new(0, 0, 32, 32);
         public bool mouseHoverOn;
-        public bool DrawStats;
+        //public bool DrawStats;
         public Slot(byte? itemid = null)
         {
             if(itemid != null)
             {
-                slotitem = new() { id = itemid ?? 0 };
+                item = new(itemid ?? 0);
             }
         }
-        public void Draw(SpriteBatch sb)
+        public void Draw(SpriteBatch sb, Texture2D slotsprite)
         {
-
-            Rect.Width = Rect.Height = 32;
-            sb.Draw(Item.SpriteSheet, Rect, new(16 * slotitem.id,0,16,16), Color.White, 0, new Vector2(8, 8), 0, 0);
-            Rect.Width = Rect.Height = 48;
-
-            if (mouseHoverOn && slotitem is not null)
+            sb.Draw(slotsprite, Rect, SrcRect, new(127,127,127,127), 0, new Vector2(16, 16), 0, 0); // Draw slot
+            if (item != null)
             {
-                var a = Game1.Arial.MeasureString(Item.Desc[slotitem.id]) *.01f;
-                a.X += 20;
-                a.Y += 20;
-                var r = Rect;
-                r.Width += (int)a.X;
-                r.Height += (int)a.Y;
-                a.Y = r.Height * .5f;
-                sb.DrawString(Game1.Arial, Item.Desc[slotitem.id], r.Location.ToVector2() - a ,Color.White,0, Vector2.Zero, 0.12f,0,0);
-                /*Corner.X = 16;
-                Corner.Width = 10;
-                var a = Game1.Arial.MeasureString(slotitem.Description);
-                for(int x = 0; x < a.X; x++)
-                {
-                    Rect.X += x;
-                    sb.Draw(UI.SlotSprite, Rect, Corner, Color.White);
-                }
-                sb.Draw(UI.SlotSprite, Rect, Corner, Color.White);
-                sb.Draw(UI.SlotSprite, Rect, Corner, Color.White);*/
+                item.Draw(sb, Rect.Location.ToVector2(),32, mouseHoverOn);
             }
         }
     }
 }
+/*Corner.X = 16;
+Corner.Width = 10;
+var a = Game1.Arial.MeasureString(slotitem.Description);
+for(int x = 0; x < a.X; x++)
+{
+    Rect.X += x;
+    sb.Draw(UI.SlotSprite, Rect, Corner, Color.White);
+}
+sb.Draw(UI.SlotSprite, Rect, Corner, Color.White);
+sb.Draw(UI.SlotSprite, Rect, Corner, Color.White);*/ //something for future desc background

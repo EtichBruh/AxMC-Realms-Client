@@ -37,13 +37,7 @@
 /processorParam:TextureFormat=Color
 /build:bullet.png
 
-#begin ColorMask.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:ColorMask.fx
-
-#begin CrewMateMASK.png
+#begin Characters.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -53,7 +47,13 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:CrewMateMASK.png
+/build:Characters.png
+
+#begin ColorMask.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:ColorMask.fx
 
 #begin cubetexture.png
 /importer:TextureImporter
@@ -146,7 +146,7 @@
 /processorParam:TextureFormat=Compressed
 /build:File.spritefont
 
-#begin ImpostorMask.png
+#begin Forest.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -156,7 +156,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:ImpostorMask.png
+/build:Forest.png
 
 #begin Items.png
 /importer:TextureImporter

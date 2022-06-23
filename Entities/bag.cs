@@ -1,25 +1,23 @@
 ﻿using AxMC_Realms_Client.UI;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Nez;
-using System;
-using System.Text;
 
 namespace AxMC_Realms_Client.Entities
 {
     public class Bag : BasicEntity
     {
-        public Item[] items;
+        public FastList<Item> items;
         //public bool isChoosed;
-        private int[] collisionMask = new int[16*14];
-        public Bag(int x, int y)
+        public Bag(int x, int y) : base(x, y)
         {
             SpriteSheetID = 0; // Bag spriteSheet
             SrcRect = new(0, 0, 16, 14);
-            Rect = new(0, 0, 32, 28);
-            items = new Item[11];
-            (Rect.X, Rect.Y )= (x, y);
-           // GetCollisionMask(SpriteSheet, 0, 0);
+            Rect.Width = 32;
+            Rect.Height = 28;
+            items = new(4);
+            items.Add(new Item(0));
+            items.Add(new Item(1));
+            items.Add(new Item(2));
+            items.Add(new Item(3));
         }
         #region Collision
         /*

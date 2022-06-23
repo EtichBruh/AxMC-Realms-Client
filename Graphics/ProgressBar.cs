@@ -14,12 +14,13 @@ namespace AxMC_Realms_Client.Graphics
         float Factor;
         private Vector2 Pos;
         public static Texture2D Pixel;
-        /// <summary>
-        /// Making a pixel for bar if none was created before
-        /// </summary>
+
         public ProgressBar()
         {
         }
+        /// <summary>
+        /// Makes a pixel for bar
+        /// </summary>
         public static void Init(GraphicsDevice GD)
         {
             /*Pixel = new Texture2D(GD, 3, 3);
@@ -29,11 +30,11 @@ namespace AxMC_Realms_Client.Graphics
             Color.Transparent,Color.Transparent,Color.Transparent
             });*/
             Pixel = new Texture2D(GD, 1, 1);
-            Pixel.SetData(new Color[] {Color.White});
+            Pixel.SetData(new Color[] {Color.White}); // im lazy to load 1 pixel throught content :D
         }
         /// <summary>
         /// Updates Position of Health Bar
-        /// TargetY equal targetY + half of targetHeight
+        /// TargetY equal targetY + half of target size Height
         /// </summary>
         public void Update(float TargetX, float TargetY)
         {
@@ -42,11 +43,11 @@ namespace AxMC_Realms_Client.Graphics
         }
         public void SetFactor(int Max)
         {
-            Factor = 1f/ (Max *.03f);
+            Factor = 1f/ (Max *.03f); // its made for optimization, max is value needed to scale progress by % ( i guess )
         }
         public void Draw(SpriteBatch SB)
         {
-            SB.Draw(Pixel, Pos, null,Color.Red, -Camera.RotDegr,Pixel.Bounds.Size.ToVector2() * 0.5f, new Vector2(Progress*Factor, 8), SpriteEffects.None,0);
+            SB.Draw(Pixel, Pos, null,Color.Red, -Camera.RotDegr,Vector2.One*.5f, new Vector2(Progress*Factor, 8), SpriteEffects.None,0);
         }
     }
 }

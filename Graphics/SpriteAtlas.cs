@@ -30,6 +30,7 @@ namespace nekoT
             var _height = spritesheet.Height / rows;
             Origin = new(_width * 0.5f, _height * 0.5f);
             Texture = spritesheet;
+            CurrentFrame = PreviousFrame = frame;
             _srcRect = new(_width * (frame % columns), _height * (frame / columns), _width, _height);
         }
         public virtual void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd) { }

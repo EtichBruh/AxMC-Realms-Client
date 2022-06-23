@@ -26,7 +26,8 @@ namespace AxMC_Realms_Client
         public static Matrix _projectionMatrix;
         public static SpriteFont Arial;
 
-        public static FastList<SpriteAtlas> _sprites;
+        public static FastList<Bullet> _Bullets;
+        private FastList<SpriteAtlas> _sprites;
         private List<SpriteAtlas> _spritesToAdd;
         private Effect _outline, _colorMask;
         private GraphicsDeviceManager _graphics;
@@ -82,8 +83,9 @@ namespace AxMC_Realms_Client
             _graphics.ApplyChanges();
             ProgressBar.Init(GraphicsDevice);
 
-            _spritesToAdd = new List<SpriteAtlas>();
-            _sprites = new FastList<SpriteAtlas>();
+            _spritesToAdd = new List<SpriteAtlas>(50);
+            _sprites = new FastList<SpriteAtlas>(50);
+            _Bullets = new();
             MapTiles = Array.Empty<Tile>();
 
             var sWidth = GraphicsDevice.Viewport.Width * .01f; // its 1 / (50 * 2), before it was / 50 / 2
@@ -122,13 +124,18 @@ namespace AxMC_Realms_Client
             _colorMask = Content.Load<Effect>("ColorMask");
             Arial = Content.Load<SpriteFont>("File");
 
-            Tile.TileSet = Content.Load<Texture2D>("MCRTile");// Order here matters
-            Enemy.tempText = Content.Load<Texture2D>("ImpostorMask");// Order here matters
-            Map.Map.Load("Ship", _spritesToAdd);// Order here matters
-            _sprites.Add(new Player(Content.Load<Texture2D>("CrewMateMASK"), Content.Load<Texture2D>("ElecticBullet")));// Order here matters
+            // Order here matters
+            Tile.TileSet = Content.Load<Texture2D>("MCRTile");
+            Enemy.tempText = Content.Load<Texture2D>("Characters");
+            Map.Map.Load("Ship", _spritesToAdd);
+            _sprites.Add(new Player(Content.Load<Texture2D>("Characters"), Content.Load<Texture2D>("ElecticBullet")));
 
             Item.SpriteSheet = Content.Load<Texture2D>("Items");
-            BasicEntity.SpriteSheet = new Texture2D[] { Content.Load<Texture2D>("DripSusBag"), Content.Load<Texture2D>("SussyPortals")};
+            BasicEntity.SpriteSheet = new Texture2D[] {
+                Content.Load<Texture2D>("DripSusBag"),
+                Content.Load<Texture2D>("SussyPortals"),
+                Content.Load<Texture2D>("Forest"),
+            };
 
             _UI = new(GraphicsDevice.Viewport.Width,
                 GraphicsDevice.Viewport.Height,
@@ -155,16 +162,20 @@ namespace AxMC_Realms_Client
                 Input.KState = Keyboard.GetState();
                 Input.MState = Mouse.GetState();
 
-                if (_spritesToAdd.Count != 0) foreach (var item in _spritesToAdd) _sprites.Add(item);
-
-                _spritesToAdd.Clear();/*
-                for (int i = 0; i < _bullets.Length; i++)
+                if (_spritesToAdd.Count != 0)
                 {
-                    _bullets[i].Update(gameTime, _spritesToAdd);
-                    if (!_bullets[i].isRemoved) continue;
-                    _bullets.RemoveAt(i);
-                    i--;
-                }*/
+                    foreach (var item in _spritesToAdd)
+                    {
+                        if (item is Bullet bullet)
+                        { _Bullets.Add(bullet); continue; }
+                        _sprites.Add(item);
+                    }
+                }
+
+                _spritesToAdd.Clear();
+
+                _UI.Update(_sprites);
+
                 for (int i = 0; i < _sprites.Length; i++)
                 {
                     _sprites[i].Update(gameTime, _spritesToAdd);
@@ -172,8 +183,14 @@ namespace AxMC_Realms_Client
                     _sprites.RemoveAt(i);
                     i--;
                 }
+                for (int i = 0; i < _Bullets.Length; i++)
+                {
+                    _Bullets[i].Update(gameTime, _spritesToAdd);
+                    if (!_Bullets[i].isRemoved) continue;
+                    _Bullets.RemoveAt(i);
+                    i--;
+                }
 
-                _UI.Update(_sprites);
                 Camera.Follow(_sprites[0].Position);
 
                 if (OperatingSystem.IsWindows() && Input.KState.IsKeyDown(Keys.NumPad5)) TakeScreenshot(gameTime);
@@ -224,7 +241,7 @@ namespace AxMC_Realms_Client
             bitmap.Save("Screenshot.png", System.Drawing.Imaging.ImageFormat.Png);
         }
         #endregion //Code taken from stackoverflow
-        const float tcfactor = 1f / 2.55f; // tile color factor
+        const float tcfactor = 1f / (2.55f * 1.5f); // tile color factor
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
@@ -238,12 +255,15 @@ namespace AxMC_Realms_Client
                 for (int j = 0; j < Player.xyCount.Y; j++)
                 {
                     var index = Player.SquareOfSightStartIndex + i + j * Map.Map.Size.X;
+
                     if (index > MapTiles.Length) continue;
                     if (MapTiles[index] is null) continue;
+
                     Vector2 pos = new Vector2(Player.TiledPos.X + i, Player.TiledPos.Y + j) * 50;
                     var shade = (255 - (pos - _sprites[0].Position).Length() * tcfactor);
                     shade = shade < 0 || shade > 255 ? 0 : shade;
-                    byte col =(byte)shade;
+                    byte col = (byte)shade;
+
                     _spriteBatch.Draw(Tile.TileSet, pos, MapTiles[index].SrcRect, new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
                 }
             }
@@ -259,23 +279,23 @@ namespace AxMC_Realms_Client
             for (int i = 0; i < BasicEntity.InteractEnt.Length; i++)
             {
                 BasicEntity.InteractEnt[i].Draw(_spriteBatch);
-            }/*
-            for (int i = 0; i < _bullets.Length; i++)
+            }
+
+            for (int i = 0; i < _Bullets.Length; i++)
             {
-                _bullets[i].Draw(_spriteBatch);
-            }*/
+                _Bullets[i].Draw(_spriteBatch);
+            }
+
             for (int i = _sprites.Length - 1; i > -1; i--)
             {
                 _sprites[i].Draw(_spriteBatch);
-                if (_sprites[i] is Enemy e)
-                {
-                    e.HPbar.Draw(_spriteBatch);
-                }
             }
+
             Player.HPbar.Draw(_spriteBatch);
 
             _spriteBatch.End();
 
+            // some 3D
             var rot = Matrix.CreateRotationZ(-Camera.RotDegr);
             var mesh = (BasicEffect)model.Meshes[0].Effects[0];
             mesh.Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
@@ -293,27 +313,27 @@ namespace AxMC_Realms_Client
                     model.Meshes[0].Draw();
                 }
             }
+            // not some 3D :(
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-            _spriteBatch.DrawString(Arial, Math.Round(1f / gameTime.ElapsedGameTime.TotalSeconds).ToString(), Vector2.Zero, Color.IndianRed, 0, Vector2.Zero, 0.16f, 0, 0);
+            _spriteBatch.DrawString(Arial, "FPS | " + Math.Round(1 / gameTime.ElapsedGameTime.TotalSeconds).ToString(), Vector2.Zero, Color.IndianRed, 0, Vector2.Zero, 0.16f, 0, 0);
+
             _UI.Draw(_spriteBatch);
 
-
-
             _spriteBatch.End();
+
             /*cube.BasiceCubeEff.View = _viewMatrix * Matrix.CreateTranslation(-_sprites[0].Position.X, _sprites[0].Position.Y, 0) * Matrix.CreateScale(Camera.CamZoom);
 
-
-foreach (EffectPass pass in cube.BasiceCubeEff.CurrentTechnique.Passes)
-{
-    foreach (Matrix cubePos in MapBlocks)
-    {
-        cube.BasiceCubeEff.World = cubePos;
-        pass.Apply();
-        GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, Block3D.SmthIndicesDevidedByThree); // la cube drawing
-    }
-}*/
+            foreach (EffectPass pass in cube.BasiceCubeEff.CurrentTechnique.Passes)
+            {
+                foreach (Matrix cubePos in MapBlocks)
+                {
+                    cube.BasiceCubeEff.World = cubePos;
+                    pass.Apply();
+                    GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, Block3D.SmthIndicesDevidedByThree); // la cube drawing
+                }
+            }*/
             base.Draw(gameTime);
         }
     }

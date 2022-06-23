@@ -17,14 +17,14 @@ namespace AxMC_Realms_Client.Entities
         public static Point xyCount;
         public static int SquareOfSightStartIndex;
         public static ProgressBar HPbar;
-        public static int XP;
+        public static int XP, Level = 0;
         int HP = 1000;
-        public static int[] Stats = { 2000, 100, 20 , 0 }; // HP, Damage, agility, armor
+        public static int[] Stats = { 2000, 100, 20, 0 }; // HP, Damage, agility, armor
         double AnimTimer = 1;
         Point[] Frames;
 
         public Player(Texture2D spriteSheet, Texture2D BulletTexture) :
-            base(spriteSheet, 3, 5, 0)
+            base(spriteSheet, 6, 5, 0)
         {
             Input.setKeys();
             Position.X = 150;
@@ -47,13 +47,12 @@ namespace AxMC_Realms_Client.Entities
         }
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
-            for (int i = 0; i < Game1._sprites.Length; i++)
+            for (int i = 0; i < Game1._Bullets.Length; i++)
             {
-                if (Game1._sprites[i] is not Bullet) continue;
-                Bullet b = (Bullet)Game1._sprites[i];
-                if (b.parent is Enemy && (b.Position - Position).LengthSquared() <= 2500)
+                Bullet b = Game1._Bullets[i];
+                if (b.enemy && (b.Position - Position).LengthSquared() <= 2500)
                 {
-                    HPbar.Progress = HP-= b.Damage;
+                    HPbar.Progress = HP -= b.Damage;
                     isRemoved = (HP <= 0);
                     b.isRemoved = true;
                 }
@@ -65,7 +64,7 @@ namespace AxMC_Realms_Client.Entities
                 Move(gameTime);
                 Enemy.NearestPlayer = Position;
                 HPbar.Update(Position.X, Position.Y + Height * 0.5f);
-                if(AnimTimer > 0) AnimTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+                if (AnimTimer > 0) AnimTimer -= gameTime.ElapsedGameTime.TotalSeconds;
 
                 if (AnimTimer < 0.8 && CurrentFrame == 4 || CurrentFrame == 9 || CurrentFrame == 14)
                 {
@@ -124,7 +123,7 @@ namespace AxMC_Realms_Client.Entities
                     Direction.Y = MathF.Sin(rot);
                 }
                 Direction *= Stats[2] * 0.05f;
-                Position += Direction; 
+                Position += Direction;
                 if (Position.X < 0 || Position.X > Map.Map.Size.X * 50) Position.X -= Direction.X;
                 if (Position.Y < 0 || Position.Y > Map.Map.Size.Y * 50) Position.Y -= Direction.Y;
                 TiledPos = (Position * .02f).ToPoint();
@@ -203,7 +202,7 @@ namespace AxMC_Realms_Client.Entities
                 b.Speed = 5;
                 b.LifeSpan = 4;
                 b.Damage = Stats[1];
-                b.parent = this;
+                b.enemy = false;
                 spritesToAdd.Add(b);
                 AnimTimer = 1;
             }
@@ -216,12 +215,15 @@ namespace AxMC_Realms_Client.Entities
         private void GetSquareOfSight()
         {
             int DrawRadius = (int)(9f / Camera.CamZoom);
+            float ratio = (float)Camera.View.Width / Camera.View.Height;
+
             xyCount.X = Math.Min(DrawRadius, TiledPos.X) + Math.Min(DrawRadius + 1, Map.Map.Size.X - TiledPos.X);
+            xyCount.X = (int)(xyCount.X * ratio);
+
             xyCount.Y = Math.Min(DrawRadius, TiledPos.Y) + Math.Min(DrawRadius + 1, Map.Map.Size.Y - TiledPos.Y);
 
-            TiledPos.X = Math.Max(0, TiledPos.X - DrawRadius);
+            TiledPos.X = Math.Max(0, TiledPos.X - (int)(DrawRadius * ratio));
             TiledPos.Y = Math.Max(0, TiledPos.Y - DrawRadius);
-
 
             SquareOfSightStartIndex = TiledPos.X + TiledPos.Y * Map.Map.Size.X;
         }
@@ -234,12 +236,12 @@ namespace AxMC_Realms_Client.Entities
             if (Input.KState.IsKeyDown(Input.ZoomOut))
             {
                 Camera.CamZoom -= 0.2f;
-                Camera.CamZoom = Camera.CamZoom  <= 0.6f ? Camera.CamZoom = 0.6f : Camera.CamZoom;
+                Camera.CamZoom = Camera.CamZoom <= 0.6f ? Camera.CamZoom = 0.6f : Camera.CamZoom;
             }
             if (Input.KState.IsKeyDown(Input.RotateCameraLeft))
             {
                 Camera.RotDegr += 0.017453292f;
-                Camera.RotDegr = Camera.RotDegr  >= 360 ? 0 : Camera.RotDegr;
+                Camera.RotDegr = Camera.RotDegr >= 360 ? 0 : Camera.RotDegr;
                 Rotation = -Camera.RotDegr;
             }
             if (Input.KState.IsKeyDown(Input.RotateCameraRight))

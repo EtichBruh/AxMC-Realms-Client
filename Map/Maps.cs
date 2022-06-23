@@ -8,8 +8,8 @@ namespace Map
 {
     enum Maps
     {
-        Ship,Street,
-
-        Portal
+        Ship,
+        Street,
+        Twilight_Forest
     }
 }
