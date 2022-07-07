@@ -301,8 +301,6 @@ namespace AxMC_Realms_Client.UI
                     CalcStats(DragItem, false);
                 }
                 isDrag = false;
-                //if (DraggingItem == null) Invetory[DraggingSlot].item = null;
-                //else DraggingItem = null;
             }
         }
         void CalcStats(int item, bool DraggedInEquip)
