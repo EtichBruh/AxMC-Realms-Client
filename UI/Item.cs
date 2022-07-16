@@ -15,21 +15,14 @@ namespace AxMC_Realms_Client.UI
         public int[] Stats { get; set; }
         public Rectangle Source { get; set; }
 
-        //public static string[] Desc = new string[] { "DRIP SUSSY AMOGUS SUPREME", "It fills you w power", "Sussy staff lmao", "DIAMONDZZZ" };
         const float scalefactor = 1f / 16f;
-        static Rectangle[] srect = new Rectangle[] {
-        new(0,1,16 + 2,15 + 3),
-        new(17,0,16+2,16+2),
-        new(34,0,16+2,16+2),
-        new(52+1,2,12+2,13+2)
-        };
+
         public static Item[] items;
         public static void Load()
         {
-            items = JsonSerializer.Deserialize<Item[]>(File.ReadAllText("Items.json"));
+            items = JsonSerializer.Deserialize<Item[]>(File.ReadAllText("Items.json"), new JsonSerializerOptions{ IncludeFields =true, WriteIndented = true  });
         }
 
-        const float origin = 17f / 2f;
         public static void Draw(SpriteBatch sb, Vector2 Position, int size, bool DrawDesc, int id)
         {
             sb.Draw(SpriteSheet, Position, items[id].Source, Color.White, 0, items[id].Source.Size.ToVector2() * .5f, size* scalefactor, 0, 0); // Draw Item

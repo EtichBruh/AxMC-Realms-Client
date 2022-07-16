@@ -24,8 +24,8 @@ namespace AxMC_Realms_Client.UI
 
         bool isDrag = false;
         bool DrawPortalButt = false;
-        int DraggingSlot;
-        byte DraggingItem = 0;
+        int DragSlot = -1;
+        int DragItem = -1;
 
         public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D PortalEnter, Texture2D expjar, Texture2D stats)
         {
@@ -142,12 +142,14 @@ namespace AxMC_Realms_Client.UI
             }
             sb.Draw(ExpJar, ExpJarRect, Color.White); // Jar is in front of liquid
             sb.End();
+            outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
             sb.Begin(samplerState: SamplerState.PointClamp, effect: outline);
             for (int i = 0; i < Invetory.Length; i++)
             {
                 Invetory[i].Draw(sb, SlotSprite);// Draw inv slot
             }
             sb.End();
+            outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
             sb.Begin(samplerState: SamplerState.PointClamp);
             if (BasicEntity.NInteract != -1)
             {
@@ -199,13 +201,13 @@ namespace AxMC_Realms_Client.UI
             }
             if (isDrag)
             {
-                if (DraggingItem != 0)
+                if (DragItem != -1)
                 {
-                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, DraggingItem);
+                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, DragItem);
                 }
                 else
                 {
-                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, Invetory[DraggingSlot].item);
+                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, Invetory[DragSlot].item);
                 }
             }
         }
@@ -220,7 +222,7 @@ namespace AxMC_Realms_Client.UI
                 {
                     if (!isDrag && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed & itemRect.Intersects(index))
                     {
-                        DraggingItem = bag.items[i];
+                        DragItem = bag.items[i];
                         isDrag = true;
                         if (bag.items.Length == 1)
                         {
@@ -242,51 +244,51 @@ namespace AxMC_Realms_Client.UI
                 r.Y -= r.Height / 2;
                 if (slot.mouseHoverOn = r.Intersects(index))
                 {
-                    if (!isDrag && slot.item != 0 && DraggingItem == 0 &&
+                    if (!isDrag && slot.item != -1 && DragItem == -1 &&
                     Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
                     {
                         isDrag = true;
 
-                        DraggingSlot = i;
+                        DragSlot = i;
                     }
                 }
-                if (isDrag && DraggingSlot != i && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
+                if (isDrag && DragSlot != i && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
                 {
-                    if (DraggingItem != 0 && slot.mouseHoverOn && slot.item == 0) // this is for dragging for non inv slot
+                    if (DragItem != -1 && slot.mouseHoverOn && slot.item == -1) // this is for dragging for non inv slot
                     {
-                        slot.item = DraggingItem;
+                        slot.item = DragItem;
                         if (i < 4)
                         {
-                            for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[DraggingItem].Stats[j];
+                            for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[DragItem].Stats[j];
                         }
-                        DraggingItem = 0;
+                        DragItem = -1;
                         isDrag = false;
 
                         continue;
                     }
-                    else if (slot.mouseHoverOn && DraggingItem == 0)
+                    else if (slot.mouseHoverOn && DragItem == -1)
                     {
-                        var SwapItem = Invetory[DraggingSlot].item;
+                        var SwapItem = Invetory[DragSlot].item;
 
-                        Invetory[DraggingSlot].item = slot.item;
+                        Invetory[DragSlot].item = slot.item;
                         slot.item = SwapItem;
 
                         isDrag = false;
 
-                        if (i < 4 && DraggingSlot >= 4)
+                        if (i < 4 && DragSlot >= 4)
                         {// this is when dragged in equip slots
                             CalcStats(slot.item, true);
                         }
-                        else if (i >= 4 && DraggingSlot < 4)
+                        else if (i >= 4 && DragSlot < 4)
                         {//this is when dragged out of equip slots
                             CalcStats(slot.item, false);
                         }
                     }
                 }
             }
-            if (isDrag && DraggingItem == 0 && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
+            if (isDrag && DragItem == -1 && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
             {
-                byte DragItem = Invetory[DraggingSlot].item;
+                var DragItem = Invetory[DragSlot].item;
                 if ( BasicEntity.GetNear() is Bag _bag)
                 {
                     _bag.items.Add(DragItem);
@@ -295,8 +297,8 @@ namespace AxMC_Realms_Client.UI
                 {
                     BasicEntity.Add(new Bag((int)ents[0].Position.X, (int)ents[0].Position.Y) { items = new() { Length = 1, Buffer = new[] { DragItem } } });
                 }
-                Invetory[DraggingSlot].item = 0;
-                if (DraggingSlot < 4)
+                Invetory[DragSlot].item = -1;
+                if (DragSlot < 4)
                 {
                     CalcStats(DragItem, false);
                 }
@@ -305,14 +307,14 @@ namespace AxMC_Realms_Client.UI
         }
         void CalcStats(int item, bool DraggedInEquip)
         {
-            var _item = Invetory[DraggingSlot].item;
+            var _item = Invetory[DragSlot].item;
             if (DraggedInEquip)
             {
-                if (Invetory[DraggingSlot].item != 0) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[_item].Stats[j];
+                if (Invetory[DragSlot].item != -1) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[_item].Stats[j];
                 for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[item].Stats[j];
                 return;
             }
-            if (Invetory[DraggingSlot].item != 0) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[_item].Stats[j];
+            if (Invetory[DragSlot].item != -1) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[_item].Stats[j];
             for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[item].Stats[j];
         }
     }

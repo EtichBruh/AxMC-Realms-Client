@@ -5,7 +5,7 @@ namespace AxMC_Realms_Client.Entity
 {
     public class Bag : BasicEntity
     {
-        public FastList<byte> items;
+        public FastList<int> items;
         //public bool isChoosed;
         public Bag(int x, int y) : base(x, y)
         {

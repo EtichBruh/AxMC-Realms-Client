@@ -85,6 +85,7 @@ namespace AxMC_Realms_Client
             _graphics.PreferredBackBufferHeight = 696;
             _graphics.ApplyChanges();
             ProgressBar.Init(GraphicsDevice);
+            Item.Load();
 
             _spritesToAdd = new List<SpriteAtlas>(50);
             _sprites = new FastList<SpriteAtlas>(50);

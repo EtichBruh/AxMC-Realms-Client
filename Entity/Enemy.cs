@@ -62,7 +62,7 @@ namespace AxMC_Realms_Client.Entity
                 timer = timera;
                 Shoot(spritesToAdd, 3);
             }
-            //HPbar.Update(Position.X, Position.Y + Height * 0.5f);
+            HPbar.Update(Position.X, Position.Y + Height * 0.5f);
             if (PreviousFrame != CurrentFrame)
             {
                 var columns = (Texture.Width / _srcRect.Width);
