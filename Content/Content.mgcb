@@ -188,6 +188,12 @@
 /processorParam:TextureFormat=Color
 /build:Items.png
 
+#begin Lit.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:Lit.fx
+
 #begin MCRTile.png
 /importer:TextureImporter
 /processor:TextureProcessor

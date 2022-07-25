@@ -2,7 +2,6 @@
 using AxMC_Realms_Client.Classes;
 using AxMC_Realms_Client.Entity;
 using AxMC_Realms_Client.Graphics;
-using AxMC_Realms_Client.Networking;
 using AxMC_Realms_Client.UI;
 using Discord;
 using Map;
@@ -13,8 +12,7 @@ using nekoT;
 using Nez;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Runtime.Versioning;
+using System.IO;
 
 namespace AxMC_Realms_Client
 {
@@ -23,7 +21,8 @@ namespace AxMC_Realms_Client
 
         //public static FastList<Bullet> _bullets;
         public static Tile[] MapTiles;
-        public static Vector2[] NetworkPlayers, MapBlocks;
+        public static Vector2[] NetworkPlayers;
+        public static byte[] MapBlocks;
         public static Matrix _projectionMatrix;
         public static SpriteFont Arial;
 
@@ -92,12 +91,16 @@ namespace AxMC_Realms_Client
             _PlayerBullets = new();
             _EnemyBullets = new();
             MapTiles = Array.Empty<Tile>();
+            Tile.Initialize();
 
             var sWidth = GraphicsDevice.Viewport.Width * .01f; // its 1 / (50 * 2), before it was / 50 / 2
             var sHeight = GraphicsDevice.Viewport.Height * 0.0089445438282648f;// its 1 / (55.9 * 2), before it was / 55.9 / 2
             _projectionMatrix = Matrix.CreateOrthographicOffCenter(-sWidth, sWidth, -sHeight, sHeight, -200f, 5000f);
             Camera.View = GraphicsDevice.Viewport;
 
+            string path = $"{Environment.CurrentDirectory}\\ScreenShots";
+
+            Directory.CreateDirectory(path);
             //ds.ActivityManagerInstance = ds.GetActivityManager();
             //ds.ActivityManagerInstance.UpdateActivity(activity, ActivityCheck);
 
@@ -111,6 +114,7 @@ namespace AxMC_Realms_Client
                 Console.WriteLine("Result not Ok");
             }
         }
+        Texture2D table, wood;
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -120,8 +124,10 @@ namespace AxMC_Realms_Client
             model = Content.Load<Model>("Wall");
             var basiceff = ((BasicEffect)model.Meshes[0].Effects[0]);
             basiceff.TextureEnabled = true;
-            basiceff.Texture = Content.Load<Texture2D>("bedrock");
+            basiceff.Texture = table = Content.Load<Texture2D>("bedrock");
             basiceff.View = Matrix.CreateLookAt(new Vector3(0, 45, 90), Vector3.Zero, Vector3.UnitZ);
+
+            wood = Content.Load<Texture2D>("Canopy");
 
             _outline = Content.Load<Effect>("outline");
             _colorMask = Content.Load<Effect>("ColorMask");
@@ -130,15 +136,14 @@ namespace AxMC_Realms_Client
             // Order here matters
             Tile.TileSet = Content.Load<Texture2D>("MCRTile");
             Enemy.tempText = Content.Load<Texture2D>("Characters");
+            BasicEntity.SpriteSheet = new Texture2D[] {
+                SpriteAtlas.AddPadding(Content.Load<Texture2D>("Forest"),ref BasicEntity.SRect),
+            };
             Map.Map.Load("Ship", _spritesToAdd);
             _sprites.Add(new Player(Content.Load<Texture2D>("Characters"), Content.Load<Texture2D>("ElecticBullet")));
 
-            Item.SpriteSheet = Content.Load<Texture2D>("Items");
-            BasicEntity.SpriteSheet = new Texture2D[] {
-                Content.Load<Texture2D>("DripSusBag"),
-                Content.Load<Texture2D>("SussyPortals"),
-                Content.Load<Texture2D>("Forest"),
-            };
+            Item.SpriteSheet = SpriteAtlas.AddPadding(Content.Load<Texture2D>("Items"), 16, 16, 4, 1);
+
 
             _UI = new(GraphicsDevice.Viewport.Width,
                 GraphicsDevice.Viewport.Height,
@@ -149,6 +154,7 @@ namespace AxMC_Realms_Client
                 Content.Load<Texture2D>("StatIcons"));
             // TODO: use this.Content to load your game content here
         }
+        const float tcfactor = 1f / (2.55f * 1.5f); // tile color factor
 
         protected override void Update(GameTime gameTime)
         {
@@ -162,6 +168,7 @@ namespace AxMC_Realms_Client
             //_colorMask.Parameters["t"].SetValue((float)gameTime.TotalGameTime.TotalSeconds);
             if (IsActive)
             {
+                var prev = Input.KState;
                 Input.KState = Keyboard.GetState();
                 Input.MState = Mouse.GetState();
 
@@ -198,10 +205,13 @@ namespace AxMC_Realms_Client
                     _PlayerBullets.RemoveAt(i);
                     i--;
                 }
+                for (int i = 5; i <= 6; i++) { 
+                    if ((Tile.SRects[i].Y += 16) >= 512) Tile.SRects[i].Y = 0;
+                }
 
                 Camera.Follow(_sprites[0].Position);
 
-                if (OperatingSystem.IsWindows() && Input.KState.IsKeyDown(Keys.NumPad5))
+                if (prev.IsKeyDown(Keys.NumPad5) && !Input.KState.IsKeyDown(Keys.NumPad5))
                     TakeScreenshot(gameTime);
             }
             // TODO: Add your update logic here
@@ -226,35 +236,32 @@ namespace AxMC_Realms_Client
 
         }
         #region screenshot
-        [SupportedOSPlatform("windows")]
         public void TakeScreenshot(GameTime gameTime)
         {
-            RenderTarget2D screenshot;
-            screenshot = new RenderTarget2D(GraphicsDevice,
+            RenderTarget2D screenshot = new(GraphicsDevice,
                 GraphicsDevice.Viewport.Width,
-                GraphicsDevice.Viewport.Height, false, SurfaceFormat.Bgr565, DepthFormat.None);
+                GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth16);
+
             GraphicsDevice.SetRenderTarget(screenshot);
             Draw(gameTime);
             GraphicsDevice.SetRenderTarget(null);
             GraphicsDevice.Present();
-            byte[] imageData = new byte[2 * screenshot.Width * screenshot.Height];
-            screenshot.GetData<byte>(imageData);
 
-            System.Drawing.Bitmap bitmap = new(screenshot.Width, screenshot.Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb565);
-            System.Drawing.Imaging.BitmapData bmData = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, screenshot.Width, screenshot.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bitmap.PixelFormat);
-            IntPtr pnative = bmData.Scan0;
-            System.Runtime.InteropServices.Marshal.Copy(imageData, 0, pnative, 2 * screenshot.Width * screenshot.Height);
-            bitmap.UnlockBits(bmData);
-            bitmap.Save("Screenshot.png", System.Drawing.Imaging.ImageFormat.Png);
+            using (MemoryStream ms = new())
+            {
+                screenshot.SaveAsPng(ms, screenshot.Width, screenshot.Height);
+                ms.Seek(0, SeekOrigin.Begin);
+                    System.Drawing.Bitmap.FromStream(ms)
+                        .Save($"{Environment.CurrentDirectory}\\ScreenShots\\{DateTime.Now.ToString().Replace(' ', '-').Replace(':', '-')}.png");
+            }
         }
-        #endregion //Code taken from stackoverflow
-        const float tcfactor = 1f / (2.55f * 1.5f); // tile color factor
+        #endregion
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
-            var ppos = _sprites[0].Position * 0.02f;
+            var ppos = _sprites[0].Position;
             _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp);
 
             for (int i = 0; i < Player.xyCount.X; i++)
@@ -266,20 +273,21 @@ namespace AxMC_Realms_Client
                     var index = Player.SquareOfSightStartIndex + i + j * Map.Map.Size.X;
 
                     if (index > MapTiles.Length) continue;
-                    if (MapTiles[index] is null) continue;
+                    if (MapTiles[index] is null) { pos.Y += 50; continue; }
 
-                    var shade = 255 - (pos - _sprites[0].Position).Length() * tcfactor;
+                    var shade = 255 - (pos - ppos).Length() * tcfactor;
                     shade = shade < 0 || shade > 255 ? 0 : shade;
                     byte col = (byte)shade;
 
-                    _spriteBatch.Draw(Tile.TileSet, pos, MapTiles[index].SrcRect, new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
+                    _spriteBatch.Draw(Tile.TileSet, pos, Tile.SRects[Map.Map.byteMap[index]], new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
                     pos.Y += 50;
                 }
             }
 
             Player.HPbar.Draw(_spriteBatch);
+
             _spriteBatch.End();
-            _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp, effect:_outline);
+            _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp, effect: _outline);
             if (NetworkPlayers != null)
             {
                 for (int i = 0; i < NetworkPlayers.Length; i++)
@@ -287,10 +295,10 @@ namespace AxMC_Realms_Client
                     _spriteBatch.Draw(_sprites[0].Texture, NetworkPlayers[i], new(0, 0, 9, 9), Color.White);
                 }
             }
-            
+
             for (int i = 0; i < BasicEntity.InteractEnt.Length; i++)
             {
-            //    _outline.Parameters["uvPix"].SetValue(Vector2.One / (BasicEntity.InteractEnt[i].Rect.Size.ToVector2() * 4));
+                //    _outline.Parameters["uvPix"].SetValue(Vector2.One / (BasicEntity.InteractEnt[i].Rect.Size.ToVector2() * 4));
                 BasicEntity.InteractEnt[i].Draw(_spriteBatch);
             }
 
@@ -304,12 +312,12 @@ namespace AxMC_Realms_Client
             for (int i = _sprites.Length - 1; i > -1; i--)
             {
                 _sprites[i].Draw(_spriteBatch);
-                if(_sprites[i] is Enemy e)
+                if (_sprites[i] is Enemy e)
                 {
                     e.HPbar.Draw(_spriteBatch);
                 }
             }
-            
+
 
             for (int i = 0; i < _EnemyBullets.Length; i++)
             {
@@ -318,9 +326,6 @@ namespace AxMC_Realms_Client
 
             //_outline.Parameters["uvPix"].SetValue(new Vector2(1f / (50 * 5.5f), 1f / (50 * 5.5f)));
 
-
-
-
             _spriteBatch.End();
 
             // some 3D
@@ -328,7 +333,11 @@ namespace AxMC_Realms_Client
 
             var rot = Matrix.CreateRotationZ(-Camera.RotDegr);
             var mesh = (BasicEffect)model.Meshes[0].Effects[0];
+            ppos *= 0.02f;
+
             mesh.Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
+
+            int pid = 0;
 
             for (int i = 0; i < Player.xyCount.X; i++)
             {
@@ -337,6 +346,12 @@ namespace AxMC_Realms_Client
                     var index = Player.SquareOfSightStartIndex + i + j * Map.Map.Size.X;
                     if (index > MapTiles.Length) continue;
                     if (MapTiles[index] is not null) continue;
+                    if(index > 0 && pid != MapBlocks[index])
+                    {
+                        if (MapBlocks[index] == 7) mesh.Texture = table;
+                        else if (MapBlocks[index] == 8) mesh.Texture = wood;
+                    }
+                    pid = MapBlocks[index];
 
                     mesh.World =
                     Matrix.CreateTranslation(ppos.X - Player.TiledPos.X - i - 0.5f, Player.TiledPos.Y + j + 0.5f - ppos.Y, 0) * rot;

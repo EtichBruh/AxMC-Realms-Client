@@ -17,13 +17,18 @@ namespace AxMC_Realms_Client.Entity
         /// nearest interactable entity ID in InteractEnt list
         /// </summary>
         public static int NInteract = -1;
-        readonly static Rectangle[] SRect = new Rectangle[] {
+        public static Rectangle[] SRect = new Rectangle[] {
             new(0,0,8,8),
             new(8,0,9,8),
-            new(0,0,6,9),
-            new(0,9,7,11),
-            new(7,0,11,13),
-            new(7,13,12,15),
+            new(17,0,9,8),
+            new(26,0,9,8),
+            new(35,0,9,8),
+            new(44,0,9,8),
+            new(0,8,6,9),
+            new(6,8,7,11),
+            new(13,8,11,13),
+            new(24,8,12,14),
+            new(36,8,16,14),
         };
         public Rectangle SrcRect;
         public Rectangle Rect;
@@ -51,7 +56,7 @@ namespace AxMC_Realms_Client.Entity
 
         public void Draw(SpriteBatch sb)
         {
-            sb.Draw(SpriteSheet[SpriteSheetID], Rect, SrcRect, Color.White, -Camera.RotDegr, SrcRect.Size.ToVector2() * .5f, 0, 0);
+            sb.Draw(SpriteSheet[0], Rect, SrcRect, Color.White, -Camera.RotDegr, SrcRect.Size.ToVector2() * .5f, 0, 0);
         }
     }
 }

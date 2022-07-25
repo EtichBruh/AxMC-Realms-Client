@@ -63,7 +63,7 @@ namespace AxMC_Realms_Client.Entity
                 PreviousFrame = CurrentFrame;
                 Move(gameTime);
                 Enemy.NearestPlayer = Position;
-                HPbar.Update(Position.X, Position.Y + Height * 0.5f);
+                HPbar.Update(Position.X, Position.Y);
                 if (AnimTimer > 0) AnimTimer -= gameTime.ElapsedGameTime.TotalSeconds;
 
                 if (AnimTimer < 0.8 && CurrentFrame == 4 || CurrentFrame == 9 || CurrentFrame == 14)

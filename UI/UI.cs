@@ -10,16 +10,18 @@ namespace AxMC_Realms_Client.UI
 {
     public class UI
     {
-        public Texture2D SlotSprite, BagUI, PEnterUI, ExpJar, StatIcons;
+        public static Texture2D SlotSprite;
+        public static ProgressBar HPBar, MPBar;
+        public static Rectangle MRect;
 
+        public Texture2D BagUI, PEnterUI, ExpJar, StatIcons;
         public Rectangle BagUISRect, BagUIRect = new(0, 0, 64, 32);
         public Rectangle ExpJarRect = new(0, 0, 32, 92);
         public Rectangle PEnterUIRect = new(0, 0, 32, 16);
         public Rectangle StatsRect = new(0, 0, 16, 16);
 
-        public static ProgressBar HPBar, MPBar;
-
         Slot[] Invetory = new Slot[12];
+
         //Slot[] Equipment = new Slot[4];
 
         bool isDrag = false;
@@ -82,13 +84,14 @@ namespace AxMC_Realms_Client.UI
             int HpBarY = Invetory[0].Rect.Y - 14 - 16;
             int HpBarX = ExpJarRect.Right;
 
-            HPBar.Update(HpBarX, HpBarY - 10);
-            MPBar.Update(HpBarX + 32 * 4, HpBarY - 10);
+            HPBar.Update(HpBarX, HpBarY);
+            MPBar.Update(HpBarX + 32 * 4, HpBarY);
 
             PEnterUIRect = new(Invetory[3].Rect.X + 16, HpBarY + 14, Invetory[0].Rect.Width * 2, 32);
         }
         public void Update(FastList<SpriteAtlas> entities)
         {
+            MRect = new Rectangle(Input.MState.Position, new Point(1, 1));
             HoveringOnSlot(entities);
 
             if (BasicEntity.GetNear() is Portal portal)
@@ -176,7 +179,6 @@ namespace AxMC_Realms_Client.UI
                         BagUIRect.X += 18 - (BagUIRect.Width = BagUIRect.Height = 30);
                         var slotRect = new Rectangle(17, 2, 30, 30);
                         Vector2 itempos = new(BagUIRect.X, BagUIRect.Y + BagUI.Height * .5f); // im not sure but its made to optimize
-                        var mouse = new Rectangle(Input.MState.Position, new Point(1, 1));
 
                         for (int i = 0; i < len; i++)
                         {
@@ -184,7 +186,7 @@ namespace AxMC_Realms_Client.UI
                             itempos.X += BagUIRect.Width;
                             if (i < len - 1) sb.Draw(BagUI, BagUIRect, slotRect, Color.White); // Draw slot
 
-                            Item.Draw(sb, itempos, 30, new Rectangle((int)itempos.X - 18, BagUIRect.Y, 30, 30).Intersects(mouse), bag.items[i]);
+                            Item.Draw(sb, itempos, 30, new Rectangle((int)itempos.X - 18, BagUIRect.Y, 30, 30).Intersects(MRect), bag.items[i]);
                         }
                         BagUISRect = new(0, 0, 64, 32);
                         BagUIRect = new(prevX, prevY, 64, 32);// reset rects back
@@ -213,14 +215,15 @@ namespace AxMC_Realms_Client.UI
         }
         void HoveringOnSlot(FastList<SpriteAtlas> ents)
         {
-            var index = new Rectangle(Input.MState.Position, new Point(1, 1));
+            bool LBpressed = Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed;
+            bool LBreleased = Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released;
             if (BasicEntity.NInteract != -1 && BasicEntity.InteractEnt[BasicEntity.NInteract] is Bag bag)
             {
                 var itemRect = BagUIRect;
                 itemRect.X -= 15 * (bag.items.Length - 1) + 30 + 18; // + 18 because 1 slot is 2 drawn slot segment and theyre offset by 1st segment width
                 for (int i = 0; i < bag.items.Length; i++)
                 {
-                    if (!isDrag && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed & itemRect.Intersects(index))
+                    if (!isDrag && LBpressed && itemRect.Intersects(MRect))
                     {
                         DragItem = bag.items[i];
                         isDrag = true;
@@ -242,17 +245,16 @@ namespace AxMC_Realms_Client.UI
                 var r = slot.Rect;
                 r.X -= r.Width / 2;
                 r.Y -= r.Height / 2;
-                if (slot.mouseHoverOn = r.Intersects(index))
+                if (slot.mouseHoverOn = r.Intersects(MRect))
                 {
-                    if (!isDrag && slot.item != -1 && DragItem == -1 &&
-                    Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                    if (!isDrag && slot.item != -1 && DragItem == -1 && LBpressed)
                     {
                         isDrag = true;
 
                         DragSlot = i;
                     }
                 }
-                if (isDrag && DragSlot != i && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
+                if (isDrag && DragSlot != i && LBreleased)
                 {
                     if (DragItem != -1 && slot.mouseHoverOn && slot.item == -1) // this is for dragging for non inv slot
                     {
@@ -286,7 +288,7 @@ namespace AxMC_Realms_Client.UI
                     }
                 }
             }
-            if (isDrag && DragItem == -1 && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
+            if (isDrag && DragItem == -1 && LBreleased)
             {
                 var DragItem = Invetory[DragSlot].item;
                 if ( BasicEntity.GetNear() is Bag _bag)

@@ -14,7 +14,7 @@ namespace Map
         /// X is map width, Y is map height
         /// </summary>
         public static Point Size;
-        static byte[] byteMap;
+        public static byte[] byteMap;
         public static void Load(string path, FastList<SpriteAtlas> entities)
         {
             byte[] entids;
@@ -26,7 +26,7 @@ namespace Map
             }
             Size.Y = byteMap.Length / Size.X;
             Game1.MapTiles = new Tile[byteMap.Length];
-            Game1.MapBlocks = new Vector2[byteMap.Length];
+            Game1.MapBlocks = new byte[byteMap.Length];
             BasicEntity.InteractEnt.Clear();
 
             for (int i = 1; i < entities.Length; i++)
@@ -37,12 +37,12 @@ namespace Map
             {
                 byte number = byteMap[i];
                 if (number == 255) continue;
-                if (number == 7)
+                if (number == 7 || number == 8)
                 {
-                    Game1.MapBlocks[i] = Vector2.One;
+                    Game1.MapBlocks[i] = number;
                     continue;
                 }
-                Game1.MapTiles[i] = new Tile(number);
+                Game1.MapTiles[i] = new Tile();
             }
             if (entids.Length > 0)
             {
@@ -68,7 +68,7 @@ namespace Map
         public static void Load(string path, List<SpriteAtlas> ToAdd)
         {
             byte[] entids;
-            using (BinaryReader br = new BinaryReader(File.OpenRead(path + ".bm")))
+            using (BinaryReader br = new(File.OpenRead(path + ".bm")))
             {
                 Size.X = br.ReadInt32();
                 byteMap = br.ReadBytes(br.ReadInt32());
@@ -76,18 +76,18 @@ namespace Map
             }
             Size.Y = byteMap.Length / Size.X;
             Game1.MapTiles = new Tile[byteMap.Length];
-            Game1.MapBlocks = new Vector2[byteMap.Length];
+            Game1.MapBlocks = new byte[byteMap.Length];
             BasicEntity.InteractEnt.Clear();
             for (int i = 0; i < byteMap.Length; i++)
             {
                 byte number = byteMap[i];
                 if (number == 255) continue;
-                if (number == 7)
+                if (number == 7 || number == 8)
                 {
-                    Game1.MapBlocks[i] = Vector2.One;
+                    Game1.MapBlocks[i] = number;
                     continue;
                 }
-                Game1.MapTiles[i] = new Tile(number);
+                Game1.MapTiles[i] = new Tile();
             }
             if (entids is not null)
             {

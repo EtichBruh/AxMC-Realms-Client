@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace nekoT
 {
@@ -46,8 +47,8 @@ namespace nekoT
         {
             GC.SuppressFinalize(this);
         }
-        #region unused
-        static Texture2D AddPadding(Texture2D tex, int width, int height, int columns, int rows)
+        #region Paddings
+        public static Texture2D AddPadding(Texture2D tex, int width, int height, int columns, int rows)
         {
             var output = new Texture2D(tex.GraphicsDevice, tex.Width + (2 * columns), tex.Height + (2 * rows));
 
@@ -68,6 +69,64 @@ namespace nekoT
             {
                 output.SetData(0, new(w * (i % columns) + 1, h * (i / columns) + 1, width, height), datas[i], 0, width * height);
             }
+            return output;
+        }
+        public static Texture2D AddPadding(Texture2D tex,ref Rectangle[] Sources)
+        {
+            int fw = tex.Width;
+            int fh = tex.Height;
+
+            for (int i = 0; i < Sources.Length; i++)
+            {
+                if(Sources[i].X == 0)
+                {
+                    fh += 2;
+                }
+                if (Sources[i].Y == 0)
+                {
+                    fw += 2;
+                }
+            }
+
+            var output = new Texture2D(tex.GraphicsDevice, fw, fh);
+
+
+            for(int i =0; i < Sources.Length; i++)
+            {
+                var data = new Color[Sources[i].Width * Sources[i].Height];
+
+                tex.GetData(0, Sources[i], data, 0, data.Length);
+
+                if (Sources[i].X > 0)
+                {
+                    if (Sources[i - 1].Right != fw)
+                    {
+                        Sources[i].X = Sources[i - 1].Right;
+                    }
+                }
+                if (Sources[i].Y > 0)
+                {
+                    Sources[i].Y+=2;
+                }
+
+                Sources[i].X++;
+                Sources[i].Y++;
+
+                output.SetData(0, Sources[i], data, 0, data.Length);
+
+                Sources[i].X--;
+                Sources[i].Y--;
+                Sources[i].Width += 2;
+                Sources[i].Height+= 2;
+            }
+
+            MemoryStream ms = new();
+            output.SaveAsPng(ms, output.Width,output.Height);
+
+            ms.Seek(0, SeekOrigin.Begin);
+
+            System.Drawing.Bitmap.FromStream(ms).Save("TestOutput.png");
+
             return output;
         }
         #endregion
