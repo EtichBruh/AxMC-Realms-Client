@@ -21,7 +21,7 @@ namespace AxMC_Realms_Client.UI
         public Rectangle StatsRect = new(0, 0, 16, 16);
 
         Slot[] Invetory = new Slot[12];
-
+        Button PortalEnter = new() { SetText ="Enter" };
         //Slot[] Equipment = new Slot[4];
 
         bool isDrag = false;
@@ -29,11 +29,10 @@ namespace AxMC_Realms_Client.UI
         int DragSlot = -1;
         int DragItem = -1;
 
-        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D PortalEnter, Texture2D expjar, Texture2D stats)
+        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D expjar, Texture2D stats)
         {
             SlotSprite = slot;
             BagUI = bag;
-            PEnterUI = PortalEnter;
             ExpJar = expjar;
             StatIcons = stats;
             BagUISRect = BagUIRect;
@@ -51,6 +50,7 @@ namespace AxMC_Realms_Client.UI
 
             Resize(swidth, sheight);
         }
+
         public void Resize(int SWidth, int SHeight)
         {
             SWidth /= 2;
@@ -87,7 +87,7 @@ namespace AxMC_Realms_Client.UI
             HPBar.Update(HpBarX, HpBarY);
             MPBar.Update(HpBarX + 32 * 4, HpBarY);
 
-            PEnterUIRect = new(Invetory[3].Rect.X + 16, HpBarY + 14, Invetory[0].Rect.Width * 2, 32);
+            PortalEnter.rect = new(Invetory[3].Rect.X + 16, HpBarY + 14, Invetory[0].Rect.Width * 2, 32);
         }
         public void Update(FastList<SpriteAtlas> entities)
         {
@@ -97,28 +97,32 @@ namespace AxMC_Realms_Client.UI
             if (BasicEntity.GetNear() is Portal portal)
             {
                 DrawPortalButt = true;
-                if (Input.KState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Enter) || Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed &&
-                    PEnterUIRect.Intersects(new Rectangle(Input.MState.Position, new Point(1, 1))))
+                if (Input.KState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Enter) || PortalEnter.Update())
                 {
                     string a = ((Map.Maps)portal.id).ToString();
                     Map.Map.Load(a, entities);
                 }
             }
-            else { DrawPortalButt = false; }
+            else { 
+                DrawPortalButt = false;
+            }
         }
+
         const float factor = 1f / (100f / 92f);
         public void Draw(SpriteBatch sb, Effect outline)
         {
             // 50
-            sb.DrawString(Game1.Arial, Player.Stats[3].ToString(), new Vector2(StatsRect.Right, StatsRect.Y), Color.LightGreen, 0, new(0, 50), 0.1f, 0, 0);
+            var statpos = new Vector2(StatsRect.Right, StatsRect.Y);
+            sb.DrawString(Game1.Arial, Player.Stats[3].ToString(), statpos, Color.LightGreen, 0, new(0, 50), 0.1f, 0, 0);
+            sb.DrawString(Game1.Arial, Player.Stats[2].ToString(), statpos + Vector2.UnitY * 24, Color.DarkRed, 0, new(0, 50), 0.1f, 0, 0);
+            sb.DrawString(Game1.Arial, Player.Stats[4].ToString(), statpos - Vector2.UnitY * 24, Color.Gray, 0, new(0, 50), 0.1f, 0, 0);
+
             sb.Draw(StatIcons, StatsRect, new Rectangle(0, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
             // 74
             StatsRect.Y += 16 + 8;
             sb.Draw(StatIcons, StatsRect, new Rectangle(32, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
-            sb.DrawString(Game1.Arial, Player.Stats[2].ToString(), new Vector2(StatsRect.Right, StatsRect.Y), Color.DarkRed, 0, new(0, 50), 0.1f, 0, 0);
             // 
             StatsRect.Y -= 32 + 16;
-            sb.DrawString(Game1.Arial, Player.Stats[4].ToString(), new Vector2(StatsRect.Right, StatsRect.Y), Color.Gray, 0, new(0, 50), 0.1f, 0, 0);
             sb.Draw(StatIcons, StatsRect, new Rectangle(64, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
 
             StatsRect.Y += 16 + 8;// Reset back
@@ -130,18 +134,16 @@ namespace AxMC_Realms_Client.UI
             }
             if (Player.HPbar.Progress > 0)
             {
-                //var rect = new Rectangle(ExpJarRect.Right, Invetory[0].Rect.Y - 14 - 16, (int)(((float)Player.HPbar.Progress / Player.Stats[0]) * 32 * 4), 14);
-                //sb.Draw(ProgressBar.Pixel, rect, Color.Red);
                 HPBar.Draw(sb);
                 MPBar.Draw(sb);
                 var str = $"{ Player.HPbar.Progress}/{Player.Stats[0]}";
                 sb.DrawString(Game1.Arial, str, new Vector2(HPBar.Pos.X + 64 - Game1.Arial.MeasureString(str).X * .05f, HPBar.Pos.Y + 2), Color.White, 0, Vector2.Zero, 0.1f, 0, 0);
-                str = $"100/100";
+                str = $"{ Player.Mana}/{Player.Stats[1]}";
                 sb.DrawString(Game1.Arial, str, new Vector2(MPBar.Pos.X + 64 - Game1.Arial.MeasureString(str).X * .05f, HPBar.Pos.Y + 2), Color.White, 0, Vector2.Zero, 0.1f, 0, 0);
             }
             if (DrawPortalButt)
             {
-                sb.Draw(PEnterUI, PEnterUIRect, Color.White);
+                PortalEnter.Draw(sb);
             }
             sb.Draw(ExpJar, ExpJarRect, Color.White); // Jar is in front of liquid
             sb.End();

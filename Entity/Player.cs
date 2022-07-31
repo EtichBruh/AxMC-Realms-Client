@@ -20,6 +20,7 @@ namespace AxMC_Realms_Client.Entity
         public static ProgressBar HPbar;
         public static int XP = 0, Level = 0;
         public static int[] Stats = { 2000,200, 100, 20, 0 }; // HP, Mana, Damage, agility, armor
+        public static int Mana = 200;
         double AnimTimer = 1;
         Point[] Frames;
 

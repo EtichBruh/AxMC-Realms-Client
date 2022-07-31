@@ -149,7 +149,6 @@ namespace AxMC_Realms_Client
                 GraphicsDevice.Viewport.Height,
                 Content.Load<Texture2D>("slotconcept"),
                 Content.Load<Texture2D>("DropBagUI"),
-                Content.Load<Texture2D>("EnterButton"),
                 Content.Load<Texture2D>("ExpirienceJar"),
                 Content.Load<Texture2D>("StatIcons"));
             // TODO: use this.Content to load your game content here

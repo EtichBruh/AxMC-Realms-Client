@@ -7,23 +7,46 @@ namespace AxMC_Realms_Client.UI
 {
     public class Button
     {
-        static Rectangle srect = new(0,32,32,16);
-        public string Text;
-        public Vector2 pos;
+        public string SetText { set { Text = value; origin = Game1.Arial.MeasureString(value) * .5f; } }
+        static Rectangle Source = new(0, 32, 32, 16);
+        public Vector2 Position;
+        Vector2 origin;
+        string Text = "Test";
         bool MouseDown = false;
 
-        public Button()
+        public Button(int x,int y)
         {
-
+            Position = new(x,y);
         }
-        public void Update()
+        public bool Update()
         {
-            if(Input.MState)
+            var m = Input.MState;
+            bool intersects =
+                m.X >= Position.X &&
+                m.Y >= Position.Y &&
+                m.X <= Position.X + 32 &&
+                m.Y <= Position.Y + 32;
+
+            if (m.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed && intersects)
+            {
+                MouseDown = true;
+            }
+            else if (m.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released && MouseDown)
+            {
+                MouseDown = false;
+                if (intersects)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         public void Draw(SpriteBatch sb)
         {
-            sb.Draw(UI.SlotSprite, pos, srect,MouseDown ? Color.Gray:Color.White);
-            sb.DrawString(Game1.Arial, Text, pos, Color.White);
+            var c = MouseDown ? Color.Gray : Color.White;
+            sb.Draw(UI.SlotSprite, Position, Source, c);
+            Game1.Arial.MeasureString(Text);
+            sb.DrawString(Game1.Arial, Text, Position, Color.BurlyWood, 0, origin, 0.12f, 0, 0);
         }
     }
 }
