@@ -7,31 +7,28 @@ namespace AxMC_Realms_Client.UI
 {
     public class Button
     {
+        static Rectangle Source = new(0, 64, 32, 16);
         public string SetText { set { Text = value; origin = Game1.Arial.MeasureString(value) * .5f; } }
-        static Rectangle Source = new(0, 32, 32, 16);
-        public Vector2 Position;
+        public Rectangle rect;
         Vector2 origin;
         string Text = "Test";
         bool MouseDown = false;
 
-        public Button(int x,int y)
+        public Button(int x, int y, int width, int height)
         {
-            Position = new(x,y);
+            rect = new(x, y, width, height);
+        }
+        public Button()
+        {
         }
         public bool Update()
         {
-            var m = Input.MState;
-            bool intersects =
-                m.X >= Position.X &&
-                m.Y >= Position.Y &&
-                m.X <= Position.X + 32 &&
-                m.Y <= Position.Y + 32;
-
-            if (m.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed && intersects)
+            bool intersects = rect.Intersects(UI.MRect);
+            if (Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed && intersects)
             {
                 MouseDown = true;
             }
-            else if (m.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released && MouseDown)
+            else if (Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released && MouseDown)
             {
                 MouseDown = false;
                 if (intersects)
@@ -41,12 +38,13 @@ namespace AxMC_Realms_Client.UI
             }
             return false;
         }
+        
         public void Draw(SpriteBatch sb)
         {
             var c = MouseDown ? Color.Gray : Color.White;
-            sb.Draw(UI.SlotSprite, Position, Source, c);
+            sb.Draw(UI.SlotSprite, rect, Source, c);
             Game1.Arial.MeasureString(Text);
-            sb.DrawString(Game1.Arial, Text, Position, Color.BurlyWood, 0, origin, 0.12f, 0, 0);
+            sb.DrawString(Game1.Arial, Text, rect.Center.ToVector2(), Color.BurlyWood, 0, origin, 0.12f, 0, 0);
         }
     }
 }

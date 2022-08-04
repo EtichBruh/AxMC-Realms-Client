@@ -14,13 +14,14 @@ namespace AxMC_Realms_Client.UI
         public static ProgressBar HPBar, MPBar;
         public static Rectangle MRect;
 
-        public Texture2D BagUI, PEnterUI, ExpJar, StatIcons;
-        public Rectangle BagUISRect, BagUIRect = new(0, 0, 64, 32);
-        public Rectangle ExpJarRect = new(0, 0, 32, 92);
-        public Rectangle PEnterUIRect = new(0, 0, 32, 16);
-        public Rectangle StatsRect = new(0, 0, 16, 16);
+        public Texture2D BagUI, PEnterUI, StatIcons;
+        public Rectangle ExpJarRect = new(0, 0, 32, 92),
+            ExpJarSRect = new(67, 0, 32, 92),
+            PEnterUIRect = new(0, 0, 32, 16),
+            StatsRect = new(0, 0, 16, 16),
+            BagUISRect, BagUIRect = new(0, 0, 64, 32);
 
-        Slot[] Invetory = new Slot[12];
+        Slot[] Inventory = new Slot[12];
         Button PortalEnter = new() { SetText ="Enter" };
         //Slot[] Equipment = new Slot[4];
 
@@ -29,19 +30,25 @@ namespace AxMC_Realms_Client.UI
         int DragSlot = -1;
         int DragItem = -1;
 
-        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D expjar, Texture2D stats)
+        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D stats)
         {
             SlotSprite = slot;
             BagUI = bag;
-            ExpJar = expjar;
             StatIcons = stats;
             BagUISRect = BagUIRect;
-            for (int i = 0; i < Invetory.Length; i++)
+
+            for (int i = 1; i < Inventory.Length; i++)
             {
-                if (i > 3 && i < 7) Invetory[i] = new((byte)(i - 4));
-                else Invetory[i] = new();
-                Invetory[i].SrcRect.X = i < 4 ? 32 : 0;
+                if (i == 3 && i == 4 && i == 11) continue;
+                Inventory[i] = new(sourceY: i > 3 ? 36 : 4);
             }
+
+            Inventory[0] = new(0, 0, 28, 32);
+            Inventory[3] = new(28, 0, 29, 32);
+
+            Inventory[4] = new(0, 32, 28, 32);
+            Inventory[11] = new(28, 32, 29, 32);
+
             HPBar = new(Color.Red, false, false, Player.HPbar.Progress, 14);
             MPBar = new(Color.Blue, false, false, 200, 14);
 
@@ -61,33 +68,44 @@ namespace AxMC_Realms_Client.UI
             BagUIRect.X = SWidth;
             BagUIRect.Y = SHeight - BagUIRect.Height;
 
-            var smth = -Invetory[0].Rect.Width / 2 + SWidth;
-            for (int x = 0; x < Invetory.Length; x++)
+            var smth = -Inventory[0].Rect.Width / 2 + SWidth;
+
+            // for future because its really hard to understand ( or maybe im sleepy asf today )
+            // result 390
+            var smthh = SWidth - Inventory[1].Rect.Width - Inventory[0].Rect.Width;// last equipment slot pos
+            var smthhh = SWidth - Inventory[1].Rect.Width * 3 - Inventory[0].Rect.Width;// last inv slot pos
+
+            //swidth = 400; mid slot width = 20;
+            Inventory[0].Rect.Y = sHCenter;
+            Inventory[0].Rect.X = smthh;
+
+            Inventory[4].Rect.X = smthhh;
+
+            for (int x = 1; x < Inventory.Length; x++)
             {
+                Inventory[x].Rect.Y = sHCenter + Inventory[x].SrcRect.Y;
+                if (x == 4) continue;
                 if (x < 4)
                 {
-                    Invetory[x].Rect.Y = sHCenter;
-                    Invetory[x].Rect.X = (x - 1) * (Invetory[x].Rect.Width) + smth;
+
+                    Inventory[x].Rect.X = Inventory[x-1].Rect.Right;
                 }
                 else
                 {
-                    Invetory[x].Rect.Y = sHCenter + 32; // 32 is height of rect
-                    Invetory[x].Rect.X = (x - 4 - 3) * (Invetory[x].Rect.Width) + smth;
+                    Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
                 }
             }
 
-            var temp = Invetory[4].Rect.Size.MultiplyBy(.5f);
+            ExpJarRect.X = Inventory[4].Rect.Left - ExpJarSRect.Width;
+            ExpJarRect.Y = Inventory[4].Rect.Bottom - ExpJarSRect.Height;
 
-            ExpJarRect.X = Invetory[4].Rect.X - temp.X - ExpJar.Width;
-            ExpJarRect.Y = Invetory[4].Rect.Y + temp.Y - ExpJar.Height;
-
-            int HpBarY = Invetory[0].Rect.Y - 14 - 16;
+            int HpBarY = Inventory[0].Rect.Y - 14 - 16;
             int HpBarX = ExpJarRect.Right;
 
             HPBar.Update(HpBarX, HpBarY);
             MPBar.Update(HpBarX + 32 * 4, HpBarY);
 
-            PortalEnter.rect = new(Invetory[3].Rect.X + 16, HpBarY + 14, Invetory[0].Rect.Width * 2, 32);
+            PortalEnter.rect = new(Inventory[3].Rect.X + 16, HpBarY + 14, Inventory[0].Rect.Width * 2, 32);
         }
         public void Update(FastList<SpriteAtlas> entities)
         {
@@ -145,13 +163,13 @@ namespace AxMC_Realms_Client.UI
             {
                 PortalEnter.Draw(sb);
             }
-            sb.Draw(ExpJar, ExpJarRect, Color.White); // Jar is in front of liquid
+            sb.Draw(SlotSprite, ExpJarRect, ExpJarSRect, Color.White); // Jar is in front of liquid
             sb.End();
             outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
             sb.Begin(samplerState: SamplerState.PointClamp, effect: outline);
-            for (int i = 0; i < Invetory.Length; i++)
+            for (int i = 0; i < Inventory.Length; i++)
             {
-                Invetory[i].Draw(sb, SlotSprite);// Draw inv slot
+                Inventory[i].Draw(sb, SlotSprite);// Draw inv slot
             }
             sb.End();
             outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
@@ -165,7 +183,6 @@ namespace AxMC_Realms_Client.UI
                     {
                         int prevX = BagUIRect.X, prevY = BagUIRect.Y;
                         int prevSW = 15 * (len - 1); // Get 1st segment position
-
                         BagUIRect.Width = BagUISRect.Width = 18; // Since by default src rect XY is 0 only set width
 
                         BagUIRect.X += prevSW;
@@ -211,7 +228,7 @@ namespace AxMC_Realms_Client.UI
                 }
                 else
                 {
-                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, Invetory[DragSlot].item);
+                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, Inventory[DragSlot].item);
                 }
             }
         }
@@ -241,9 +258,9 @@ namespace AxMC_Realms_Client.UI
                     itemRect.X += 30;
                 }
             }
-            for (int i = 0; i < Invetory.Length; i++)
+            for (int i = 0; i < Inventory.Length; i++)
             {
-                var slot = Invetory[i];
+                var slot = Inventory[i];
                 var r = slot.Rect;
                 r.X -= r.Width / 2;
                 r.Y -= r.Height / 2;
@@ -272,9 +289,9 @@ namespace AxMC_Realms_Client.UI
                     }
                     else if (slot.mouseHoverOn && DragItem == -1)
                     {
-                        var SwapItem = Invetory[DragSlot].item;
+                        var SwapItem = Inventory[DragSlot].item;
 
-                        Invetory[DragSlot].item = slot.item;
+                        Inventory[DragSlot].item = slot.item;
                         slot.item = SwapItem;
 
                         isDrag = false;
@@ -292,7 +309,7 @@ namespace AxMC_Realms_Client.UI
             }
             if (isDrag && DragItem == -1 && LBreleased)
             {
-                var DragItem = Invetory[DragSlot].item;
+                var DragItem = Inventory[DragSlot].item;
                 if ( BasicEntity.GetNear() is Bag _bag)
                 {
                     _bag.items.Add(DragItem);
@@ -301,7 +318,7 @@ namespace AxMC_Realms_Client.UI
                 {
                     BasicEntity.Add(new Bag((int)ents[0].Position.X, (int)ents[0].Position.Y) { items = new() { Length = 1, Buffer = new[] { DragItem } } });
                 }
-                Invetory[DragSlot].item = -1;
+                Inventory[DragSlot].item = -1;
                 if (DragSlot < 4)
                 {
                     CalcStats(DragItem, false);
@@ -311,14 +328,14 @@ namespace AxMC_Realms_Client.UI
         }
         void CalcStats(int item, bool DraggedInEquip)
         {
-            var _item = Invetory[DragSlot].item;
+            var _item = Inventory[DragSlot].item;
             if (DraggedInEquip)
             {
-                if (Invetory[DragSlot].item != -1) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[_item].Stats[j];
+                if (Inventory[DragSlot].item != -1) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[_item].Stats[j];
                 for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[item].Stats[j];
                 return;
             }
-            if (Invetory[DragSlot].item != -1) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[_item].Stats[j];
+            if (Inventory[DragSlot].item != -1) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[_item].Stats[j];
             for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[item].Stats[j];
         }
     }
