@@ -30,7 +30,7 @@ namespace AxMC_Realms_Client
         public static FastList<Bullet> _EnemyBullets;
         private FastList<SpriteAtlas> _sprites;
         private List<SpriteAtlas> _spritesToAdd;
-        private Effect _outline, _colorMask;
+        private Effect _outline;//, _colorMask;
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
@@ -130,7 +130,7 @@ namespace AxMC_Realms_Client
             wood = Content.Load<Texture2D>("Canopy");
 
             _outline = Content.Load<Effect>("outline");
-            _colorMask = Content.Load<Effect>("ColorMask");
+            //_colorMask = Content.Load<Effect>("ColorMask");
             Arial = Content.Load<SpriteFont>("File");
 
             // Order here matters
@@ -156,7 +156,7 @@ namespace AxMC_Realms_Client
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
             {
                 Exit();
             }
@@ -166,7 +166,7 @@ namespace AxMC_Realms_Client
             //_colorMask.Parameters["t"].SetValue((float)gameTime.TotalGameTime.TotalSeconds);
             if (IsActive)
             {
-                var prev = Input.KState;
+                Input.PKState = Input.KState;
                 Input.KState = Keyboard.GetState();
                 Input.MState = Mouse.GetState();
 
@@ -209,7 +209,7 @@ namespace AxMC_Realms_Client
 
                 Camera.Follow(_sprites[0].Position);
 
-                if (prev.IsKeyDown(Keys.NumPad5) && !Input.KState.IsKeyDown(Keys.NumPad5))
+                if (Input.PKState.IsKeyDown(Keys.NumPad5) && !Input.KState.IsKeyDown(Keys.NumPad5))
                     TakeScreenshot(gameTime);
             }
             // TODO: Add your update logic here
@@ -219,6 +219,10 @@ namespace AxMC_Realms_Client
 
         protected override void OnExiting(object sender, EventArgs args)
         {
+            using (BinaryWriter bw = new(File.OpenWrite("Options")))
+            {
+                bw.Write(UI.UI.SlotSizeMultiplier);
+            }
             base.OnExiting(sender, args);
         }
 

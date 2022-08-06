@@ -5,22 +5,36 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace AxMC_Realms_Client.UI
 {
+    public enum ButtonType
+    {
+        Big,
+        Medium,
+        Small
+    }
     public class Button
     {
-        static Rectangle Source = new(0, 64, 32, 16);
+        static Rectangle[] Source = new Rectangle[] { 
+            new(0, 64, 32, 16),
+            new(31, 64, 32, 16),
+            new(64, 80, 32, 16),
+        };
         public string SetText { set { Text = value; origin = Game1.Arial.MeasureString(value) * .5f; } }
         public Rectangle rect;
         Vector2 origin;
         string Text = "Test";
         bool MouseDown = false;
+        int type;
 
-        public Button(int x, int y, int width, int height)
+        public Button(ButtonType type, string text)
+        {
+            this.type = (int)type;
+            SetText = text;
+        }
+        public Button(int x, int y, int width, int height, ButtonType type, string text) : this(type, text)
         {
             rect = new(x, y, width, height);
         }
-        public Button()
-        {
-        }
+
         public bool Update()
         {
             bool intersects = rect.Intersects(UI.MRect);
@@ -42,7 +56,7 @@ namespace AxMC_Realms_Client.UI
         public void Draw(SpriteBatch sb)
         {
             var c = MouseDown ? Color.Gray : Color.White;
-            sb.Draw(UI.SlotSprite, rect, Source, c);
+            sb.Draw(UI.SlotSprite, rect, Source[type], c);
             Game1.Arial.MeasureString(Text);
             sb.DrawString(Game1.Arial, Text, rect.Center.ToVector2(), Color.BurlyWood, 0, origin, 0.12f, 0, 0);
         }

@@ -3,8 +3,10 @@ using AxMC_Realms_Client.Entity;
 using AxMC_Realms_Client.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using nekoT;
 using Nez;
+using System.IO;
 
 namespace AxMC_Realms_Client.UI
 {
@@ -22,20 +24,29 @@ namespace AxMC_Realms_Client.UI
             BagUISRect, BagUIRect = new(0, 0, 64, 32);
 
         Slot[] Inventory = new Slot[12];
-        Button PortalEnter = new() { SetText ="Enter" };
+        Button PortalEnter = new(ButtonType.Big,"Enter");
+        Options opts;
         //Slot[] Equipment = new Slot[4];
 
         bool isDrag = false;
         bool DrawPortalButt = false;
         int DragSlot = -1;
         int DragItem = -1;
+        public static float SlotSizeMultiplier = 1;
 
         public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D stats)
         {
+            /*
+            using (BinaryReader br = new BinaryReader(File.OpenRead("Options")))
+            {
+                SlotSizeMultiplier = br.ReadSingle();
+            }
+            */
             SlotSprite = slot;
             BagUI = bag;
             StatIcons = stats;
             BagUISRect = BagUIRect;
+            opts = new(swidth, sheight);
 
             for (int i = 1; i < Inventory.Length; i++)
             {
@@ -61,7 +72,7 @@ namespace AxMC_Realms_Client.UI
         public void Resize(int SWidth, int SHeight)
         {
             SWidth /= 2;
-            int sHCenter = (int)(SHeight * 0.8f);
+            int sHCenter = (int)(SHeight * 0.85f);
 
             StatsRect.Y = SHeight / 2;
 
@@ -88,7 +99,7 @@ namespace AxMC_Realms_Client.UI
                 if (x < 4)
                 {
 
-                    Inventory[x].Rect.X = Inventory[x-1].Rect.Right;
+                    Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
                 }
                 else
                 {
@@ -109,6 +120,17 @@ namespace AxMC_Realms_Client.UI
         }
         public void Update(FastList<SpriteAtlas> entities)
         {
+
+            if (Input.PKState.IsKeyDown(Keys.Escape) && !Input.KState.IsKeyDown(Keys.Escape))
+            {
+                opts.Active = !opts.Active;
+            }
+            if (opts.Active)
+            {
+                opts.Update();
+                return;
+            }
+
             MRect = new Rectangle(Input.MState.Position, new Point(1, 1));
             HoveringOnSlot(entities);
 
@@ -121,7 +143,8 @@ namespace AxMC_Realms_Client.UI
                     Map.Map.Load(a, entities);
                 }
             }
-            else { 
+            else
+            {
                 DrawPortalButt = false;
             }
         }
@@ -174,52 +197,55 @@ namespace AxMC_Realms_Client.UI
             sb.End();
             outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
             sb.Begin(samplerState: SamplerState.PointClamp);
-            if (BasicEntity.NInteract != -1)
+            if (BasicEntity.GetNear() is Bag bag)
             {
-                if (BasicEntity.GetNear() is Bag bag)
+                int len = bag.items.Length;
+                if (len != 2)
                 {
-                    int len = bag.items.Length;
-                    if (len != 2)
+                    int prevX = BagUIRect.X, prevY = BagUIRect.Y;
+                    int prevSW = 15 * (len - 1); // Get 1st segment position
+                    BagUIRect.Width = BagUISRect.Width = 18; // Since by default src rect XY is 0 only set width
+
+                    BagUIRect.X += prevSW;
+                    BagUISRect.X = 46;
+                    sb.Draw(BagUI, BagUIRect, BagUISRect, Color.White); // Draw last segment
+
+                    BagUISRect.X = 0;
+                    BagUIRect.X = prevX - prevSW - 18;
+                    sb.Draw(BagUI, BagUIRect, BagUISRect, Color.White); // Draw 1st segment
+
+                    BagUIRect.Y += 2;
+                    BagUISRect.Y += 2;
+                    BagUIRect.X += 18 - (BagUIRect.Width = BagUIRect.Height = 30);
+                    var slotRect = new Rectangle(17, 2, 30, 30);
+                    Vector2 itempos = new(BagUIRect.X, BagUIRect.Y + BagUI.Height * .5f); // im not sure but its made to optimize
+
+                    for (int i = 0; i < len; i++)
                     {
-                        int prevX = BagUIRect.X, prevY = BagUIRect.Y;
-                        int prevSW = 15 * (len - 1); // Get 1st segment position
-                        BagUIRect.Width = BagUISRect.Width = 18; // Since by default src rect XY is 0 only set width
+                        BagUIRect.X += BagUIRect.Width;
+                        itempos.X += BagUIRect.Width;
+                        if (i < len - 1) sb.Draw(BagUI, BagUIRect, slotRect, Color.White); // Draw slot
 
-                        BagUIRect.X += prevSW;
-                        BagUISRect.X = 46;
-                        sb.Draw(BagUI, BagUIRect, BagUISRect, Color.White); // Draw last segment
-
-                        BagUISRect.X = 0;
-                        BagUIRect.X = prevX - prevSW - 18;
-                        sb.Draw(BagUI, BagUIRect, BagUISRect, Color.White); // Draw 1st segment
-
-                        BagUIRect.Y += 2;
-                        BagUISRect.Y += 2;
-                        BagUIRect.X += 18 - (BagUIRect.Width = BagUIRect.Height = 30);
-                        var slotRect = new Rectangle(17, 2, 30, 30);
-                        Vector2 itempos = new(BagUIRect.X, BagUIRect.Y + BagUI.Height * .5f); // im not sure but its made to optimize
-
-                        for (int i = 0; i < len; i++)
-                        {
-                            BagUIRect.X += BagUIRect.Width;
-                            itempos.X += BagUIRect.Width;
-                            if (i < len - 1) sb.Draw(BagUI, BagUIRect, slotRect, Color.White); // Draw slot
-
-                            Item.Draw(sb, itempos, 30, new Rectangle((int)itempos.X - 18, BagUIRect.Y, 30, 30).Intersects(MRect), bag.items[i]);
-                        }
-                        BagUISRect = new(0, 0, 64, 32);
-                        BagUIRect = new(prevX, prevY, 64, 32);// reset rects back
+                        Item.Draw(sb, itempos, 30, new Rectangle((int)itempos.X - 18, BagUIRect.Y, 30, 30).Intersects(MRect), bag.items[i]);
                     }
-                    else if (len == 2)
-                    {
-                        sb.Draw(BagUI, BagUIRect, null, Color.White, 0, new(BagUI.Width * .5f, 0), 0, 0);
-                        float y = BagUIRect.Y + BagUI.Height * .5f;
-                        Item.Draw(sb, new(BagUIRect.X - BagUIRect.Width * .25f, y), 30, false, bag.items[0]);
-                        Item.Draw(sb, new(BagUIRect.X + BagUIRect.Width * .25f, y), 30, false, bag.items[1]);
-                    }
+                    BagUISRect = new(0, 0, 64, 32);
+                    BagUIRect = new(prevX, prevY, 64, 32);// reset rects back
                 }
-                //else sb.Draw(PEnterUI, PEnterUIRect, Color.White);
+                else if (len == 2)
+                {
+                    sb.Draw(BagUI, BagUIRect, null, Color.White, 0, new(BagUI.Width * .5f, 0), 0, 0);
+                    float y = BagUIRect.Y + BagUI.Height * .5f;
+                    Item.Draw(sb, new(BagUIRect.X - BagUIRect.Width * .25f, y), 30, false, bag.items[0]);
+                    Item.Draw(sb, new(BagUIRect.X + BagUIRect.Width * .25f, y), 30, false, bag.items[1]);
+                }
             }
+            if (opts.Active)
+            {
+                opts.Draw(sb);
+            }
+            sb.End();
+
+            sb.Begin(samplerState: SamplerState.PointClamp, effect: outline);
             if (isDrag)
             {
                 if (DragItem != -1)
@@ -234,8 +260,8 @@ namespace AxMC_Realms_Client.UI
         }
         void HoveringOnSlot(FastList<SpriteAtlas> ents)
         {
-            bool LBpressed = Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed;
-            bool LBreleased = Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released;
+            bool LBpressed = Input.MState.LeftButton == ButtonState.Pressed;
+            bool LBreleased = Input.MState.LeftButton == ButtonState.Released;
             if (BasicEntity.NInteract != -1 && BasicEntity.InteractEnt[BasicEntity.NInteract] is Bag bag)
             {
                 var itemRect = BagUIRect;
@@ -262,8 +288,7 @@ namespace AxMC_Realms_Client.UI
             {
                 var slot = Inventory[i];
                 var r = slot.Rect;
-                r.X -= r.Width / 2;
-                r.Y -= r.Height / 2;
+
                 if (slot.mouseHoverOn = r.Intersects(MRect))
                 {
                     if (!isDrag && slot.item != -1 && DragItem == -1 && LBpressed)
@@ -310,7 +335,7 @@ namespace AxMC_Realms_Client.UI
             if (isDrag && DragItem == -1 && LBreleased)
             {
                 var DragItem = Inventory[DragSlot].item;
-                if ( BasicEntity.GetNear() is Bag _bag)
+                if (BasicEntity.GetNear() is Bag _bag)
                 {
                     _bag.items.Add(DragItem);
                 }
