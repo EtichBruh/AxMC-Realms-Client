@@ -24,7 +24,7 @@ namespace AxMC_Realms_Client.UI
             sb.Draw(slotsprite, Rect, SrcRect, new(127, 127, 127, 127)); // Draw slot
             if (item != -1)
             {
-                Item.Draw(sb, Rect.Center.ToVector2(), 16, mouseHoverOn, item);
+                Item.Draw(sb, Rect.Center.ToVector2(), 16 , mouseHoverOn, item);
             }
         }
     }

@@ -221,7 +221,7 @@ namespace AxMC_Realms_Client
         {
             using (BinaryWriter bw = new(File.OpenWrite("Options")))
             {
-                bw.Write(UI.UI.SlotSizeMultiplier);
+                bw.Write(_UI.SlotSizeMultiplier);
             }
             base.OnExiting(sender, args);
         }

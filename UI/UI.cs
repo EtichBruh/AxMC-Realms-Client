@@ -32,21 +32,17 @@ namespace AxMC_Realms_Client.UI
         bool DrawPortalButt = false;
         int DragSlot = -1;
         int DragItem = -1;
-        public static float SlotSizeMultiplier = 1;
+        public float SlotSizeMultiplier { get { return slotsize; } set { slotsize = value; SlotResize(); } }
+        float slotsize = 1;
 
         public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D stats)
         {
-            /*
-            using (BinaryReader br = new BinaryReader(File.OpenRead("Options")))
-            {
-                SlotSizeMultiplier = br.ReadSingle();
-            }
-            */
+
             SlotSprite = slot;
             BagUI = bag;
             StatIcons = stats;
             BagUISRect = BagUIRect;
-            opts = new(swidth, sheight);
+            opts = new(swidth, sheight,this);
 
             for (int i = 1; i < Inventory.Length; i++)
             {
@@ -67,6 +63,11 @@ namespace AxMC_Realms_Client.UI
             MPBar.SetFactor(Player.Stats[1], 32 * 4);
 
             Resize(swidth, sheight);
+
+            // using (BinaryReader br = new BinaryReader(File.OpenRead("Options")))
+            //{
+            SlotSizeMultiplier = 1;
+           //}
         }
 
         public void Resize(int SWidth, int SHeight)
@@ -84,7 +85,7 @@ namespace AxMC_Realms_Client.UI
             // for future because its really hard to understand ( or maybe im sleepy asf today )
             // result 390
             var smthh = SWidth - Inventory[1].Rect.Width - Inventory[0].Rect.Width;// last equipment slot pos
-            var smthhh = SWidth - Inventory[1].Rect.Width * 3 - Inventory[0].Rect.Width;// last inv slot pos
+            var smthhh = smthh - Inventory[1].Rect.Width *2;// position - 2 more slots 
 
             //swidth = 400; mid slot width = 20;
             Inventory[0].Rect.Y = sHCenter;
@@ -96,15 +97,14 @@ namespace AxMC_Realms_Client.UI
             {
                 Inventory[x].Rect.Y = sHCenter + Inventory[x].SrcRect.Y;
                 if (x == 4) continue;
-                if (x < 4)
-                {
-
+                //if (x < 4)
+                //{
                     Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
-                }
-                else
-                {
-                    Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
-                }
+                //}
+                //else
+                //{
+                    //Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
+                //}
             }
 
             ExpJarRect.X = Inventory[4].Rect.Left - ExpJarSRect.Width;
@@ -118,8 +118,41 @@ namespace AxMC_Realms_Client.UI
 
             PortalEnter.rect = new(Inventory[3].Rect.X + 16, HpBarY + 14, Inventory[0].Rect.Width * 2, 32);
         }
+        public void SlotResize()
+        {
+            float mult = slotsize;
+
+            var s = Inventory[0];
+            int ww = s.SrcRect.Width;
+            int hh = (int)(s.SrcRect.Height * mult - s.Rect.Height);
+
+            int temp = (int)(ww * mult - s.Rect.Width) + (int)(Inventory[1].SrcRect.Width * mult - Inventory[1].Rect.Width);
+
+            s.Rect.X -= temp;
+            s.Rect.Y -= hh;
+            s.Rect.Width = (int)(mult * ww);
+            s.Rect.Height = (int)(mult * s.SrcRect.Height);
+
+            var ss = Inventory[4];
+            ss.Rect.X -= temp + (int)(Inventory[1].SrcRect.Width * mult - Inventory[1].Rect.Width) *2;
+            ss.Rect.Y -= hh;
+            ss.Rect.Width = (int)(mult * ss.SrcRect.Width);
+            ss.Rect.Height = (int)(mult * ss.SrcRect.Height);
+
+            for (int i =1; i < Inventory.Length; i++)
+            {
+                if (i == 4) continue;
+
+                var slot = Inventory[i];
+                slot.Rect.Width = (int)(mult * slot.SrcRect.Width);
+                slot.Rect.Height = (int)(mult * slot.SrcRect.Height);
+                slot.Rect.X = Inventory[i - 1].Rect.Right;
+                slot.Rect.Y -= hh;
+            }
+        }
         public void Update(FastList<SpriteAtlas> entities)
         {
+            MRect = new Rectangle(Input.MState.Position, new Point(1, 1));
 
             if (Input.PKState.IsKeyDown(Keys.Escape) && !Input.KState.IsKeyDown(Keys.Escape))
             {
@@ -127,11 +160,10 @@ namespace AxMC_Realms_Client.UI
             }
             if (opts.Active)
             {
-                opts.Update();
+                opts.Update(this);
                 return;
             }
 
-            MRect = new Rectangle(Input.MState.Position, new Point(1, 1));
             HoveringOnSlot(entities);
 
             if (BasicEntity.GetNear() is Portal portal)
@@ -258,6 +290,7 @@ namespace AxMC_Realms_Client.UI
                 }
             }
         }
+        #region SlotHovering
         void HoveringOnSlot(FastList<SpriteAtlas> ents)
         {
             bool LBpressed = Input.MState.LeftButton == ButtonState.Pressed;
@@ -351,6 +384,8 @@ namespace AxMC_Realms_Client.UI
                 isDrag = false;
             }
         }
+        #endregion
+
         void CalcStats(int item, bool DraggedInEquip)
         {
             var _item = Inventory[DragSlot].item;

@@ -15,8 +15,8 @@ namespace AxMC_Realms_Client.UI
     {
         static Rectangle[] Source = new Rectangle[] { 
             new(0, 64, 32, 16),
-            new(31, 64, 32, 16),
-            new(64, 80, 32, 16),
+            new(31, 64, 22, 16),
+            new(0, 80, 14, 14),
         };
         public string SetText { set { Text = value; origin = Game1.Arial.MeasureString(value) * .5f; } }
         public Rectangle rect;
