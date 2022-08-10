@@ -24,7 +24,7 @@ namespace AxMC_Realms_Client.UI
             BagUISRect, BagUIRect = new(0, 0, 64, 32);
 
         Slot[] Inventory = new Slot[12];
-        Button PortalEnter = new(ButtonType.Big,"Enter");
+        Button PortalEnter = new(ButtonType.Big, "Enter");
         Options opts;
         //Slot[] Equipment = new Slot[4];
 
@@ -42,7 +42,7 @@ namespace AxMC_Realms_Client.UI
             BagUI = bag;
             StatIcons = stats;
             BagUISRect = BagUIRect;
-            opts = new(swidth, sheight,this);
+            opts = new(swidth, sheight, this);
 
             for (int i = 1; i < Inventory.Length; i++)
             {
@@ -64,10 +64,10 @@ namespace AxMC_Realms_Client.UI
 
             Resize(swidth, sheight);
 
-            // using (BinaryReader br = new BinaryReader(File.OpenRead("Options")))
-            //{
-            SlotSizeMultiplier = 1;
-           //}
+            using (BinaryReader br = new BinaryReader(File.OpenRead("Options")))
+            {
+                SlotSizeMultiplier = br.ReadSingle();
+            }
         }
 
         public void Resize(int SWidth, int SHeight)
@@ -83,11 +83,9 @@ namespace AxMC_Realms_Client.UI
             var smth = -Inventory[0].Rect.Width / 2 + SWidth;
 
             // for future because its really hard to understand ( or maybe im sleepy asf today )
-            // result 390
             var smthh = SWidth - Inventory[1].Rect.Width - Inventory[0].Rect.Width;// last equipment slot pos
-            var smthhh = smthh - Inventory[1].Rect.Width *2;// position - 2 more slots 
+            var smthhh = smthh - Inventory[1].Rect.Width * 2;// position - 2 more slots 
 
-            //swidth = 400; mid slot width = 20;
             Inventory[0].Rect.Y = sHCenter;
             Inventory[0].Rect.X = smthh;
 
@@ -97,14 +95,7 @@ namespace AxMC_Realms_Client.UI
             {
                 Inventory[x].Rect.Y = sHCenter + Inventory[x].SrcRect.Y;
                 if (x == 4) continue;
-                //if (x < 4)
-                //{
-                    Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
-                //}
-                //else
-                //{
-                    //Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
-                //}
+                Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
             }
 
             ExpJarRect.X = Inventory[4].Rect.Left - ExpJarSRect.Width;
@@ -134,12 +125,12 @@ namespace AxMC_Realms_Client.UI
             s.Rect.Height = (int)(mult * s.SrcRect.Height);
 
             var ss = Inventory[4];
-            ss.Rect.X -= temp + (int)(Inventory[1].SrcRect.Width * mult - Inventory[1].Rect.Width) *2;
+            ss.Rect.X -= temp + (int)(Inventory[1].SrcRect.Width * mult - Inventory[1].Rect.Width) * 2;
             ss.Rect.Y -= hh;
             ss.Rect.Width = (int)(mult * ss.SrcRect.Width);
             ss.Rect.Height = (int)(mult * ss.SrcRect.Height);
 
-            for (int i =1; i < Inventory.Length; i++)
+            for (int i = 1; i < Inventory.Length; i++)
             {
                 if (i == 4) continue;
 
@@ -169,7 +160,7 @@ namespace AxMC_Realms_Client.UI
             if (BasicEntity.GetNear() is Portal portal)
             {
                 DrawPortalButt = true;
-                if (Input.KState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Enter) || PortalEnter.Update())
+                if (Input.KState.IsKeyDown(Keys.Enter) || PortalEnter.Update())
                 {
                     string a = ((Map.Maps)portal.id).ToString();
                     Map.Map.Load(a, entities);
@@ -187,16 +178,16 @@ namespace AxMC_Realms_Client.UI
             // 50
             var statpos = new Vector2(StatsRect.Right, StatsRect.Y);
             sb.DrawString(Game1.Arial, Player.Stats[3].ToString(), statpos, Color.LightGreen, 0, new(0, 50), 0.1f, 0, 0);
-            sb.DrawString(Game1.Arial, Player.Stats[2].ToString(), statpos + Vector2.UnitY * 24, Color.DarkRed, 0, new(0, 50), 0.1f, 0, 0);
-            sb.DrawString(Game1.Arial, Player.Stats[4].ToString(), statpos - Vector2.UnitY * 24, Color.Gray, 0, new(0, 50), 0.1f, 0, 0);
+            sb.DrawString(Game1.Arial, Player.Stats[2].ToString(), statpos + new Vector2(0, 24), Color.DarkRed, 0, new(0, 50), 0.1f, 0, 0);
+            sb.DrawString(Game1.Arial, Player.Stats[4].ToString(), statpos - new Vector2(0, 24), Color.Gray, 0, new(0, 50), 0.1f, 0, 0);
 
-            sb.Draw(StatIcons, StatsRect, new Rectangle(0, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
+            sb.Draw(StatIcons, StatsRect, new(0, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
             // 74
             StatsRect.Y += 16 + 8;
-            sb.Draw(StatIcons, StatsRect, new Rectangle(32, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
+            sb.Draw(StatIcons, StatsRect, new(32, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
             // 
             StatsRect.Y -= 32 + 16;
-            sb.Draw(StatIcons, StatsRect, new Rectangle(64, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
+            sb.Draw(StatIcons, StatsRect, new(64, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
 
             StatsRect.Y += 16 + 8;// Reset back
 
