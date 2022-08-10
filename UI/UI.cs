@@ -175,17 +175,14 @@ namespace AxMC_Realms_Client.UI
         const float factor = 1f / (100f / 92f);
         public void Draw(SpriteBatch sb, Effect outline)
         {
-            // 50
             var statpos = new Vector2(StatsRect.Right, StatsRect.Y);
             sb.DrawString(Game1.Arial, Player.Stats[3].ToString(), statpos, Color.LightGreen, 0, new(0, 50), 0.1f, 0, 0);
             sb.DrawString(Game1.Arial, Player.Stats[2].ToString(), statpos + new Vector2(0, 24), Color.DarkRed, 0, new(0, 50), 0.1f, 0, 0);
             sb.DrawString(Game1.Arial, Player.Stats[4].ToString(), statpos - new Vector2(0, 24), Color.Gray, 0, new(0, 50), 0.1f, 0, 0);
 
             sb.Draw(StatIcons, StatsRect, new(0, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
-            // 74
             StatsRect.Y += 16 + 8;
             sb.Draw(StatIcons, StatsRect, new(32, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
-            // 
             StatsRect.Y -= 32 + 16;
             sb.Draw(StatIcons, StatsRect, new(64, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
 
@@ -194,7 +191,7 @@ namespace AxMC_Realms_Client.UI
             if (Player.XP > 0)
             {
                 int height = (int)(Player.XP * factor);
-                sb.Draw(ProgressBar.Pixel, new Rectangle(ExpJarRect.X, ExpJarRect.Bottom - height - 10, ExpJarRect.Width, height), Color.LightGray);
+                sb.Draw(ProgressBar.Pixel, new Rectangle(ExpJarRect.X, ExpJarRect.Bottom - height - 10, ExpJarRect.Width, height), Color.DarkRed);
             }
             if (Player.HPbar.Progress > 0)
             {
@@ -211,6 +208,7 @@ namespace AxMC_Realms_Client.UI
             }
             sb.Draw(SlotSprite, ExpJarRect, ExpJarSRect, Color.White); // Jar is in front of liquid
             sb.End();
+
             outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
             sb.Begin(samplerState: SamplerState.PointClamp, effect: outline);
             for (int i = 0; i < Inventory.Length; i++)
@@ -218,7 +216,7 @@ namespace AxMC_Realms_Client.UI
                 Inventory[i].Draw(sb, SlotSprite);// Draw inv slot
             }
             sb.End();
-            outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
+
             sb.Begin(samplerState: SamplerState.PointClamp);
             if (BasicEntity.GetNear() is Bag bag)
             {
@@ -268,6 +266,7 @@ namespace AxMC_Realms_Client.UI
             }
             sb.End();
 
+            //outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
             sb.Begin(samplerState: SamplerState.PointClamp, effect: outline);
             if (isDrag)
             {

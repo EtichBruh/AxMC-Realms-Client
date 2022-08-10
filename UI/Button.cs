@@ -58,7 +58,7 @@ namespace AxMC_Realms_Client.UI
             var c = MouseDown ? Color.Gray : Color.White;
             sb.Draw(UI.SlotSprite, rect, Source[type], c);
             Game1.Arial.MeasureString(Text);
-            sb.DrawString(Game1.Arial, Text, rect.Center.ToVector2(), Color.BurlyWood, 0, origin, 0.12f, 0, 0);
+            sb.DrawString(Game1.Arial, Text, rect.Center.ToVector2(), Color.White, 0, origin, 0.12f, 0, 0);
         }
     }
 }

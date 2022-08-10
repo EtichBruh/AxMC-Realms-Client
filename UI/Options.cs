@@ -42,6 +42,7 @@ namespace AxMC_Realms_Client.UI
         public void Draw(SpriteBatch sb)
         {
             Panel.Draw(sb, UI.SlotSprite, Position, width, 300);
+            sb.DrawString(Game1.Arial, "Inventory slot size", new(Position.X + 12, SlotSize.rect.Y ), Color.White,0,Vector2.Zero,0.12f,0,0);
             SlotSize.Draw(sb);
             Title.Draw(sb);
         }

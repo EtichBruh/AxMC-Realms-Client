@@ -12,8 +12,11 @@ namespace AxMC_Realms_Client.UI
         public byte id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        string _description;
         public int[] Stats { get; set; }
         public Rectangle Source { get; set; }
+
+        Vector2 origin;
 
         const float scalefactor = 1f / 16f;
 
@@ -21,27 +24,34 @@ namespace AxMC_Realms_Client.UI
         public static void Load()
         {
             items = JsonSerializer.Deserialize<Item[]>(File.ReadAllText("Items.json"), new JsonSerializerOptions{ IncludeFields =true, WriteIndented = true  });
+            for(int i =0;i < items.Length; i++)
+            {
+                var item = items[i];
+
+                item._description = item.Name +
+                    '\n' + item.Description;
+                item._description += item.Stats[0] == 0 ? "" : "\n + " + item.Stats[0] + "Max Health";
+                item._description += item.Stats[1] == 0 ? "" : "\n + " + item.Stats[1] + "Max Mana";
+                item._description += item.Stats[2] == 0 ? "" : "\n + " + item.Stats[2] + "Strength";
+                item._description += item.Stats[3] == 0 ? "" : "\n + " + item.Stats[3] + "Agility";
+                item._description += item.Stats[4] == 0 ? "" : "\n + " + item.Stats[4] + "Intelligence";
+
+                item.origin = item.Source.Size.ToVector2() * .5f;
+            }
         }
 
         public static void Draw(SpriteBatch sb, Vector2 Position, int size, bool DrawDesc, int id)
         {
             var item = items[id];
-            sb.Draw(SpriteSheet, Position, item.Source, Color.White, 0, item.Source.Size.ToVector2() * .5f, size* scalefactor, 0, 0); // Draw Item
+            sb.Draw(SpriteSheet, Position, item.Source, Color.White, 0, item.origin, size* scalefactor, 0, 0); // Draw Item
             if (DrawDesc)
             {
-                var Desc = item.Name +
-                    '\n' + item.Description;
-                Desc += item.Stats[0] == 0 ?"": "\n + " + item.Stats[0] + "Max Health";
-                Desc += item.Stats[1] == 0 ?"": "\n + " + item.Stats[1] + "Max Mana";
-                Desc += item.Stats[2] == 0 ?"": "\n + " + item.Stats[2] + "Strength";
-                Desc += item.Stats[3] == 0 ?"": "\n + " + item.Stats[3] + "Agility";
-                Desc += item.Stats[4] == 0 ?"": "\n + " + item.Stats[4] + "Intelligence";
-
-                var a = Game1.Arial.MeasureString(Desc) * .01f * 12 * 0.5f; // * .01f because the font size is 100 so i scale it to 1 then multiply by size and make it centred
+                var a = Game1.Arial.MeasureString(item._description) * .01f * 12 * 0.5f; // * .01f because the font size is 100 so i scale it to 1 then multiply by size and make it centred
                 a.Y *= 2;
-                a.Y += size;
-                Panel.Draw(sb, UI.SlotSprite, Position - a, (int)(a.X * 2.25f), (int)((a.Y - size) * 1.25f));
-                sb.DrawString(Game1.Arial, Desc, Position - a, Color.White, 0, Vector2.Zero, 0.12f, 0, 0); // Draw item Description
+                Position -= a;
+                Position.Y -= size;
+                Panel.Draw(sb, UI.SlotSprite, Position, (int)(a.X * 2.25f), (int)a.Y);
+                sb.DrawString(Game1.Arial, item._description, Position, Color.White, 0, Vector2.Zero, 0.12f, 0, 0); // Draw item Description
             }
         }
     }
