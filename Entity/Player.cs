@@ -19,9 +19,10 @@ namespace AxMC_Realms_Client.Entity
         public static int SquareOfSightStartIndex;
         public static ProgressBar HPbar;
         public static int XP = 0, Level = 0;
-        public static int[] Stats = { 2000,200, 100, 20, 0 }; // HP, Mana, Damage, agility, armor
+        public static int[] Stats = { 2000,200, 100, 20, 0, 1 }; // HP, Mana, Damage, agility, armor, bullets
         public static int Mana = 200;
         double AnimTimer = 1;
+        double Shootcd = 1;
         Point[] Frames;
 
         public Player(Texture2D spriteSheet, Texture2D BulletTexture) :
@@ -46,12 +47,13 @@ namespace AxMC_Realms_Client.Entity
                 Frames[i].Y = _srcRect.Height * (i / columns);
             }
         }
+        const float agilityfactor = 1f / 20f;
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
             for (int i = 0; i < Game1._EnemyBullets.Length; i++)
             {
                 Bullet b = Game1._EnemyBullets[i];
-                if (b.enemy && (b.Position - Position).LengthSquared() <= 2500)
+                if ((b.Position - Position).LengthSquared() <= 2500)
                 {   
                     isRemoved = ((HPbar.Progress -= b.Damage) <= 0);
                     UI.UI.HPBar.Progress = HPbar.Progress;
@@ -66,12 +68,13 @@ namespace AxMC_Realms_Client.Entity
                 Enemy.NearestPlayer = Position;
                 HPbar.Update(Position.X, Position.Y);
                 if (AnimTimer > 0) AnimTimer -= gameTime.ElapsedGameTime.TotalSeconds;
+                if (Shootcd > 0) Shootcd -= gameTime.ElapsedGameTime.TotalSeconds * (Stats[3] * agilityfactor);
 
                 if (AnimTimer < 0.8 && CurrentFrame == 4 || CurrentFrame == 9 || CurrentFrame == 14)
                 {
                     CurrentFrame--;
                 }
-                if (AnimTimer <= 0)
+                if (Shootcd <= 0)
                 {
                     Shoot(spritesToAdd);
                 }
@@ -175,19 +178,19 @@ namespace AxMC_Realms_Client.Entity
             {
                 Bullet b = _bullet.Clone() as Bullet;
                 b.Position = Position;
-                b.Direction = Vector2.Normalize(Vector2.Transform(Input.MState.Position.ToVector2(), Matrix.Invert(Camera.Transform)) - Position);
-                b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + Bullet.TexOffset;
-                if (b.Rotation > 0 && b.Rotation < Bullet.TexOffset * 2)
+                var Dir = Vector2.Normalize(Vector2.Transform(Input.MState.Position.ToVector2(), Matrix.Invert(Camera.Transform)) - b.Position);
+                float r = MathF.Atan2(Dir.Y, Dir.X) + Bullet.TexOffset;
+                if (r > 0 && r < Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 3;
                 }
-                else if (b.Rotation > Bullet.TexOffset * 2 && b.Rotation < Bullet.TexOffset * 4)
+                else if (r > Bullet.TexOffset * 2 && r < Bullet.TexOffset * 4)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 8;
                 }
-                else if (b.Rotation < 0 && b.Rotation > -Bullet.TexOffset * 2)
+                else if (r < 0 && r > -Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
                     CurrentFrame = 13;
@@ -202,14 +205,20 @@ namespace AxMC_Realms_Client.Entity
                     CurrentFrame++;
                 }
                 b.Speed = 5;
-                b.LifeSpan = 4;
+                b.LifeSpan = 2;
                 b.Damage = Stats[1];
-                b.enemy = false;
-                Game1._PlayerBullets.Add(b);
-                AnimTimer = 1;
+                Shootcd = 1;
+                float someoffset = -1.5f + Stats[5] * 0.5f ;
+                for (int i = 0; i < Stats[5]; i++)
+                {
+                    Bullet bb = b.Clone() as Bullet;
+                    bb.Direction.X = MathF.Cos(r - Bullet.TexOffset * (i - someoffset));
+                    bb.Direction.Y = MathF.Sin(r - Bullet.TexOffset * (i - someoffset));
+                    bb.Rotation = MathF.Atan2(bb.Direction.Y, bb.Direction.X) + Bullet.TexOffset;
+                    Game1._PlayerBullets.Add(bb);
+                }
             }
         }
-        //const float RadiusFactor = 1f / 9f;
         /// <summary>
         /// Calculates the start index for square of sighte
         /// </summary>

@@ -203,7 +203,8 @@ namespace AxMC_Realms_Client
                     _PlayerBullets.RemoveAt(i);
                     i--;
                 }
-                for (int i = 5; i <= 6; i++) { 
+                for (int i = 5; i <= 6; i++)
+                {
                     if ((Tile.SRects[i].Y += 16) >= 512) Tile.SRects[i].Y = 0;
                 }
 
@@ -240,21 +241,15 @@ namespace AxMC_Realms_Client
         #region screenshot
         public void TakeScreenshot(GameTime gameTime)
         {
-            RenderTarget2D screenshot = new(GraphicsDevice,
-                GraphicsDevice.Viewport.Width,
-                GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth16);
-
-            GraphicsDevice.SetRenderTarget(screenshot);
-            Draw(gameTime);
-            GraphicsDevice.SetRenderTarget(null);
-            GraphicsDevice.Present();
-
-            using (MemoryStream ms = new())
+            using (Texture2D tex = new(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight))
             {
-                screenshot.SaveAsPng(ms, screenshot.Width, screenshot.Height);
-                ms.Seek(0, SeekOrigin.Begin);
-                    System.Drawing.Bitmap.FromStream(ms)
-                        .Save($"{Environment.CurrentDirectory}\\ScreenShots\\{DateTime.Now.ToString().Replace(' ', '-').Replace(':', '-')}.png");
+                var data = new Color[tex.Width* tex.Height];
+                GraphicsDevice.GetBackBufferData<Color>(data);
+                tex.SetData(data);
+                using (var stream = File.Create($"{Environment.CurrentDirectory}\\ScreenShots\\{DateTime.Now.ToString().Replace(' ', '-').Replace(':', '-')}.png"))
+                {
+                    tex.SaveAsJpeg(stream, tex.Width, tex.Height);
+                }
             }
         }
         #endregion
@@ -264,6 +259,7 @@ namespace AxMC_Realms_Client
 
             // TODO: Add your drawing code here
             var ppos = _sprites[0].Position;
+
             _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp);
 
             for (int i = 0; i < Player.xyCount.X; i++)
@@ -348,7 +344,7 @@ namespace AxMC_Realms_Client
                     var index = Player.SquareOfSightStartIndex + i + j * Map.Map.Size.X;
                     if (index > MapTiles.Length) continue;
                     if (MapTiles[index] is not null) continue;
-                    if(index > 0 && pid != MapBlocks[index])
+                    if (index > 0 && pid != MapBlocks[index])
                     {
                         if (MapBlocks[index] == 7) mesh.Texture = table;
                         else if (MapBlocks[index] == 8) mesh.Texture = wood;
@@ -370,18 +366,7 @@ namespace AxMC_Realms_Client
 
             _spriteBatch.End();
 
-            /*cube.BasiceCubeEff.View = _viewMatrix * Matrix.CreateTranslation(-_sprites[0].Position.X, _sprites[0].Position.Y, 0) * Matrix.CreateScale(Camera.CamZoom);
-
-            foreach (EffectPass pass in cube.BasiceCubeEff.CurrentTechnique.Passes)
-            {
-                foreach (Matrix cubePos in MapBlocks)
-                {
-                    cube.BasiceCubeEff.World = cubePos;
-                    pass.Apply();
-                    GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, Block3D.SmthIndicesDevidedByThree); // la cube drawing
-                }
-            }*/
-            base.Draw(gameTime);
+                base.Draw(gameTime);
         }
     }
 }

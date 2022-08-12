@@ -33,7 +33,7 @@ namespace AxMC_Realms_Client.Entity
             for (int i = 0; i < Game1._PlayerBullets.Length; i++)
             {
                 Bullet b = Game1._PlayerBullets[i];
-                if (!b.enemy && (b.Position - Position).LengthSquared() < 2501)
+                if ((b.Position - Position).LengthSquared() < 2501)
                 {
                     isRemoved = ((HPbar.Progress -= b.Damage) <= 0);
                     b.isRemoved = true;
@@ -99,11 +99,10 @@ namespace AxMC_Realms_Client.Entity
                 }
                 b.Speed = 5;
                 b.LifeSpan = 2;
-                b.enemy = true;
                 b.Damage = 10;
 
-                float someoffset = -1 + bulllets * 0.5f;
-                for (int i = 0; i <= bulllets; i++)
+                float someoffset = -1.5f + bulllets * 0.5f;
+                for (int i = 0; i < bulllets; i++)
                 {
                     Bullet bb = b.Clone() as Bullet;
                     bb.Position = Position;
@@ -112,43 +111,6 @@ namespace AxMC_Realms_Client.Entity
                     bb.Rotation = MathF.Atan2(bb.Direction.Y, bb.Direction.X) + Bullet.TexOffset;
                     Game1._EnemyBullets.Add(bb);
                 }
-                //spritesToAdd.Add(b);
-            }
-        }
-        private void Shoot(List<SpriteAtlas> spritesToAdd)
-        {
-            if (NearestPlayer != Vector2.Zero)
-            {
-                Bullet b = Player._bullet.Clone() as Bullet;
-                b.Position = Position;
-                b.Direction = Vector2.Normalize(NearestPlayer - Position);
-                b.Rotation = MathF.Atan2(b.Direction.Y, b.Direction.X) + Bullet.TexOffset;
-                if (b.Rotation > 0 && b.Rotation < Bullet.TexOffset * 2)
-                {
-                    Effect = SpriteEffects.None;
-                    CurrentFrame = 4;
-                }
-                else if (b.Rotation > Bullet.TexOffset * 2 && b.Rotation < Bullet.TexOffset * 4)
-                {
-                    Effect = SpriteEffects.None;
-                    CurrentFrame = 9;
-                }
-                else if (b.Rotation < 0 && b.Rotation > -Bullet.TexOffset * 2)
-                {
-                    Effect = SpriteEffects.None;
-                    CurrentFrame = 13;
-                }
-                else
-                {
-                    Effect = SpriteEffects.FlipHorizontally;
-                    CurrentFrame = 4;
-                }
-                b.Speed = 5;
-                b.LifeSpan = 2;
-                b.enemy = true;
-                b.Damage = 27;
-                Game1._EnemyBullets.Add(b);
-                //_spawnedBullets += 0.1f;
             }
         }
     }

@@ -97,17 +97,20 @@ namespace AxMC_Realms_Client.UI
                 if (x == 4) continue;
                 Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
             }
-
+            UIResize();
+        }
+        void UIResize()
+        {
             ExpJarRect.X = Inventory[4].Rect.Left - ExpJarSRect.Width;
             ExpJarRect.Y = Inventory[4].Rect.Bottom - ExpJarSRect.Height;
 
-            int HpBarY = Inventory[0].Rect.Y - 14 - 16;
+            int HpBarY = Inventory[0].Rect.Y - 14;
             int HpBarX = ExpJarRect.Right;
 
             HPBar.Update(HpBarX, HpBarY);
             MPBar.Update(HpBarX + 32 * 4, HpBarY);
 
-            PortalEnter.rect = new(Inventory[3].Rect.X + 16, HpBarY + 14, Inventory[0].Rect.Width * 2, 32);
+            PortalEnter.rect = new(Inventory[3].Rect.Right, HpBarY + 14, 64, 32);
         }
         public void SlotResize()
         {
@@ -140,6 +143,7 @@ namespace AxMC_Realms_Client.UI
                 slot.Rect.X = Inventory[i - 1].Rect.Right;
                 slot.Rect.Y -= hh;
             }
+            UIResize();
         }
         public void Update(FastList<SpriteAtlas> entities)
         {
@@ -328,7 +332,7 @@ namespace AxMC_Realms_Client.UI
                         slot.item = DragItem;
                         if (i < 4)
                         {
-                            for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[DragItem].Stats[j];
+                            for (int j = 0; j < Item.items[DragItem].Stats.Length; j++) Player.Stats[j] += Item.items[DragItem].Stats[j];
                         }
                         DragItem = -1;
                         isDrag = false;
@@ -381,12 +385,12 @@ namespace AxMC_Realms_Client.UI
             var _item = Inventory[DragSlot].item;
             if (DraggedInEquip)
             {
-                if (Inventory[DragSlot].item != -1) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[_item].Stats[j];
-                for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[item].Stats[j];
+                if (Inventory[DragSlot].item != -1) for (int j = 0; j < Item.items[item].Stats.Length; j++) Player.Stats[j] -= Item.items[_item].Stats[j];
+                for (int j = 0; j < Item.items[item].Stats.Length; j++) Player.Stats[j] += Item.items[item].Stats[j];
                 return;
             }
-            if (Inventory[DragSlot].item != -1) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[_item].Stats[j];
-            for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[item].Stats[j];
+            if (Inventory[DragSlot].item != -1) for (int j = 0; j < Item.items[item].Stats.Length; j++) Player.Stats[j] += Item.items[_item].Stats[j];
+            for (int j = 0; j < Item.items[item].Stats.Length; j++) Player.Stats[j] -= Item.items[item].Stats[j];
         }
     }
 }

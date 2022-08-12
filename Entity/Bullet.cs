@@ -13,7 +13,7 @@ namespace AxMC_Realms_Client.Entity
         public float Speed;
         public const float TexOffset = 0.7853982f; //MathHelper.ToRadians(45)
         public int Damage = 0;
-        public bool enemy;
+        //public bool enemy;
 
         public Bullet(Texture2D spriteSheet)
         : base(spriteSheet, 1, 1, 0)
