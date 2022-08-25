@@ -18,7 +18,7 @@ namespace AxMC_Realms_Client.UI
 
         public Texture2D BagUI, PEnterUI, StatIcons;
         public Rectangle ExpJarRect = new(0, 0, 32, 92),
-            ExpJarSRect = new(67, 0, 32, 92),
+            ExpJarSRect = new(57, 0, 32, 92),
             PEnterUIRect = new(0, 0, 32, 16),
             StatsRect = new(0, 0, 16, 16),
             BagUISRect, BagUIRect = new(0, 0, 64, 32);
@@ -47,7 +47,7 @@ namespace AxMC_Realms_Client.UI
             for (int i = 1; i < Inventory.Length; i++)
             {
                 if (i == 3 && i == 4 && i == 11) continue;
-                Inventory[i] = new(sourceY: i > 3 ? 36 : 4);
+                Inventory[i] = new();
             }
 
             Inventory[0] = new(0, 0, 28, 32);
@@ -93,9 +93,10 @@ namespace AxMC_Realms_Client.UI
 
             for (int x = 1; x < Inventory.Length; x++)
             {
-                Inventory[x].Rect.Y = sHCenter + Inventory[x].SrcRect.Y;
+                var slot = Inventory[x];
+                slot.Rect.Y = sHCenter + slot.SrcRect.Y + (x > 4 && x < Inventory.Length -1 ? 32 : 0);
                 if (x == 4) continue;
-                Inventory[x].Rect.X = Inventory[x - 1].Rect.Right;
+                slot.Rect.X = Inventory[x - 1].Rect.Right;
             }
             UIResize();
         }

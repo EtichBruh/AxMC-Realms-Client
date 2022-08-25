@@ -8,17 +8,17 @@ namespace AxMC_Realms_Client.UI
     {
         //corners
         static Rectangle[] Corner = new Rectangle[] {
-            new(0, 0, 6, 15),
-            new(51, 0, 6, 15),
-            new(0, 53, 5, 11),
-            new(52, 53, 5, 11)
+            new(0, 0, 7, 16),
+            new(50, 0, 7, 16),
+            new(1, 21, 6, 11),
+            new(50, 21, 6, 11)
         };
         //panel box
-        static Rectangle box = new(3, 4, 1, 1);// 3 29
-        static Rectangle boox = new(4, 0, 1, 2);
-        static Rectangle boxx = new(3, 29, 1, 2);
-        static Rectangle bbox = new(3, 15, 2, 6);
-        static Rectangle bbbox = new(3, 15, 1, 6);
+        static Rectangle box = new(8, 7, 1, 1); // panel fill
+        static Rectangle boox = new(7, 4, 1, 2); // top "outline"
+        static Rectangle boxx = new(7, 28, 1, 2); // bottom outline 
+        static Rectangle bbox = new(3, 16, 2, 5); // ???
+        static Rectangle bbbox = new(3, 16, 1, 5); // ???
 
         public static void Draw(SpriteBatch sb, Texture2D tex, Vector2 pos, int width, int height)
         {
@@ -35,8 +35,8 @@ namespace AxMC_Realms_Client.UI
 
             sb.Draw(tex, pos, Corner[0], Color.White);
             sb.Draw(tex, pos + new Vector2(width-2, 0), Corner[1], Color.White);
-            sb.Draw(tex, pos + new Vector2(0, height-4), Corner[2], Color.White);
-            sb.Draw(tex, pos + new Vector2(width-1, height-4), Corner[3], Color.White);
+            sb.Draw(tex, pos + new Vector2(3, height-4), Corner[2], Color.White);
+            sb.Draw(tex, pos + new Vector2(width-3, height-4), Corner[3], Color.White);
         }
     }
 }

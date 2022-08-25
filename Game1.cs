@@ -244,11 +244,11 @@ namespace AxMC_Realms_Client
             using (Texture2D tex = new(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight))
             {
                 var data = new Color[tex.Width* tex.Height];
-                GraphicsDevice.GetBackBufferData<Color>(data);
+                GraphicsDevice.GetBackBufferData(data);
                 tex.SetData(data);
-                using (var stream = File.Create($"{Environment.CurrentDirectory}\\ScreenShots\\{DateTime.Now.ToString().Replace(' ', '-').Replace(':', '-')}.png"))
+                using (var stream = File.Create($"{Environment.CurrentDirectory}\\ScreenShots\\{DateTime.Now.ToString().Replace(':', '~')}.png"))
                 {
-                    tex.SaveAsJpeg(stream, tex.Width, tex.Height);
+                    tex.SaveAsPng(stream, tex.Width, tex.Height);
                 }
             }
         }
