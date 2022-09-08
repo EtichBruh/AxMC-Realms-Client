@@ -1,5 +1,4 @@
 ﻿using AxMC.Camera;
-using AxMC_Realms_Client.Classes;
 using AxMC_Realms_Client.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -18,16 +17,27 @@ namespace AxMC_Realms_Client.Entity
         public ProgressBar HPbar;
         private double timer, timera = 1;
         const int FramesOffset = 15; // 15 is length of player frames
+        static Point[] Frames;
+
+
 
         public Enemy(Texture2D SpriteSheet)
             : base(SpriteSheet, 6, 5, FramesOffset)
         {
             Width = 50;
             Height = 50;
-            HPbar = new(Color.Red,true, true, 100,8);
-            HPbar.SetFactor(MaxHP,30);
+            HPbar = new(Color.Red, true, true, 100, 8);
+            HPbar.SetFactor(MaxHP, 30);
+            int columns = 5;
+            int rows = 3;
+            Frames = new Point[columns * rows];
+            for (int i = 0; i < Frames.Length; i++)
+            {
+                Frames[i].X = _srcRect.Width * ((i + FramesOffset) % columns);
+                Frames[i].Y = _srcRect.Height * ((i + FramesOffset) / columns);
+            }
         }
-
+        const float texoffset = 1.5707964f;
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
             for (int i = 0; i < Game1._PlayerBullets.Length; i++)
@@ -53,21 +63,56 @@ namespace AxMC_Realms_Client.Entity
             PreviousFrame = CurrentFrame;
             Rotation = -Camera.RotDegr;
             timer -= gameTime.ElapsedGameTime.TotalSeconds;
-            if (timer < 0.8 && CurrentFrame == 4 + FramesOffset || CurrentFrame == 9 + FramesOffset || CurrentFrame == 14 + FramesOffset)
+            if (timer < 0.8 &&
+                CurrentFrame == 4 + FramesOffset ||
+                CurrentFrame == 9 + FramesOffset ||
+                CurrentFrame == 14 + FramesOffset
+                )
             {
                 CurrentFrame--;
             }
-            if (timer <= 0)
+            bool seeplayer = (NearestPlayer - Position).LengthSquared() < 500 * 500;
+            if (timer < 0)
             {
                 timer = timera;
-                Shoot(spritesToAdd, 3);
+                if (seeplayer) Shoot(spritesToAdd, 3);
+                else
+                {
+                    Direction.X = (float)new Random().NextDouble() * 2 - 1;
+                    Direction.Y = (float)new Random().NextDouble() * 2 - 1;
+                }
+            }
+            Position += Direction;
+            if (seeplayer)
+            {
+                Direction = Vector2.Normalize(NearestPlayer - Position);
+
+                float Rotation = MathF.Atan2(Direction.Y, Direction.X) + 1.5707964f;
+                if (Rotation > 0 && Rotation < Bullet.TexOffset * 2)
+                {
+                    Effect = SpriteEffects.None;
+                    CurrentFrame = 1;
+                }
+                else if (Rotation > Bullet.TexOffset * 2 && Rotation < Bullet.TexOffset * 4)
+                {
+                    Effect = SpriteEffects.None;
+                    CurrentFrame = 6;
+                }
+                else if (Rotation < 0 && Rotation > -Bullet.TexOffset * 2)
+                {
+                    Effect = SpriteEffects.None;
+                    CurrentFrame = 11;
+                }
+                else
+                {
+                    Effect = SpriteEffects.FlipHorizontally;
+                    CurrentFrame = 1;
+                }
             }
             HPbar.Update(Position.X, Position.Y);
             if (PreviousFrame != CurrentFrame)
             {
-                var columns = (Texture.Width / _srcRect.Width);
-                _srcRect.X = _srcRect.Width * (CurrentFrame % columns);
-                _srcRect.Y = _srcRect.Height * (CurrentFrame / columns);
+                _srcRect.Location = Frames[CurrentFrame];
             }
         }
         private void Shoot(List<SpriteAtlas> spritesToAdd, int bulllets)
@@ -80,22 +125,22 @@ namespace AxMC_Realms_Client.Entity
                 if (Rotation > 0 && Rotation < Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 4 + FramesOffset;
+                    CurrentFrame = 4;
                 }
                 else if (Rotation > Bullet.TexOffset * 2 && Rotation < Bullet.TexOffset * 4)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 9 + FramesOffset;
+                    CurrentFrame = 9 ;
                 }
                 else if (Rotation < 0 && Rotation > -Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 14 + FramesOffset;
+                    CurrentFrame = 14 ;
                 }
                 else
                 {
                     Effect = SpriteEffects.FlipHorizontally;
-                    CurrentFrame = 4 + FramesOffset;
+                    CurrentFrame = 4;
                 }
                 b.Speed = 5;
                 b.LifeSpan = 2;

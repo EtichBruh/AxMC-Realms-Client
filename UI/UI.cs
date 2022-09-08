@@ -21,7 +21,8 @@ namespace AxMC_Realms_Client.UI
             ExpJarSRect = new(57, 0, 32, 92),
             PEnterUIRect = new(0, 0, 32, 16),
             StatsRect = new(0, 0, 16, 16),
-            BagUISRect, BagUIRect = new(0, 0, 64, 32);
+            BagUISRect, BagUIRect = new(0, 0, 64, 32),
+            HPRect = new(0, 64, 57, 16), MPRect = new(0, 80, 57, 17);
 
         Slot[] Inventory = new Slot[12];
         Button PortalEnter = new(ButtonType.Big, "Enter");
@@ -72,6 +73,7 @@ namespace AxMC_Realms_Client.UI
 
         public void Resize(int SWidth, int SHeight)
         {
+            opts.Resize(SWidth, SHeight);
             SWidth /= 2;
             int sHCenter = (int)(SHeight * 0.85f);
 
@@ -94,7 +96,7 @@ namespace AxMC_Realms_Client.UI
             for (int x = 1; x < Inventory.Length; x++)
             {
                 var slot = Inventory[x];
-                slot.Rect.Y = sHCenter + slot.SrcRect.Y + (x > 4 && x < Inventory.Length -1 ? 32 : 0);
+                slot.Rect.Y = sHCenter + slot.SrcRect.Y + (x > 4 && x < Inventory.Length - 1 ? 32 : 0);
                 if (x == 4) continue;
                 slot.Rect.X = Inventory[x - 1].Rect.Right;
             }
@@ -105,21 +107,21 @@ namespace AxMC_Realms_Client.UI
             ExpJarRect.X = Inventory[4].Rect.Left - ExpJarSRect.Width;
             ExpJarRect.Y = Inventory[4].Rect.Bottom - ExpJarSRect.Height;
 
-            int HpBarY = Inventory[0].Rect.Y - 14;
-            int HpBarX = ExpJarRect.Right;
+            int HpBarY = Inventory[0].Rect.Y - 15;
+            int HpBarX = ExpJarRect.Right + 1;
 
             HPBar.Update(HpBarX, HpBarY);
-            MPBar.Update(HpBarX + 32 * 4, HpBarY);
+            MPBar.Update(HpBarX + 32 * 4 + 1, HpBarY);
 
             PortalEnter.rect = new(Inventory[3].Rect.Right, HpBarY + 14, 64, 32);
         }
-        public void SlotResize()
+        public void SlotResize()//im so sorry for no comments here
         {
             float mult = slotsize;
 
             var s = Inventory[0];
             int ww = s.SrcRect.Width;
-            int hh = (int)(s.SrcRect.Height * mult - s.Rect.Height);
+            int hh = (int)(s.SrcRect.Height * mult - s.Rect.Height); 
 
             int temp = (int)(ww * mult - s.Rect.Width) + (int)(Inventory[1].SrcRect.Width * mult - Inventory[1].Rect.Width);
 
@@ -198,14 +200,20 @@ namespace AxMC_Realms_Client.UI
                 int height = (int)(Player.XP * factor);
                 sb.Draw(ProgressBar.Pixel, new Rectangle(ExpJarRect.X, ExpJarRect.Bottom - height - 10, ExpJarRect.Width, height), Color.DarkRed);
             }
-            if (Player.HPbar.Progress > 0)
+
+            if (Player.HPbar.Progress > 0) // else player is dead LMAO :joy:
             {
+
                 HPBar.Draw(sb);
-                MPBar.Draw(sb);
                 var str = $"{ Player.HPbar.Progress}/{Player.Stats[0]}";
                 sb.DrawString(Game1.Arial, str, new Vector2(HPBar.Pos.X + 64 - Game1.Arial.MeasureString(str).X * .05f, HPBar.Pos.Y + 2), Color.White, 0, Vector2.Zero, 0.1f, 0, 0);
+                sb.Draw(SlotSprite, HPBar.Pos - Vector2.One, HPRect, Color.White, 0, Vector2.Zero, new Vector2(2.3f, 1), 0, 0);
+
+                MPBar.Draw(sb);
                 str = $"{ Player.Mana}/{Player.Stats[1]}";
                 sb.DrawString(Game1.Arial, str, new Vector2(MPBar.Pos.X + 64 - Game1.Arial.MeasureString(str).X * .05f, HPBar.Pos.Y + 2), Color.White, 0, Vector2.Zero, 0.1f, 0, 0);
+                sb.Draw(SlotSprite, MPBar.Pos - Vector2.One, MPRect, Color.White, 0, Vector2.Zero, new Vector2(2.3f, 1), 0, 0);
+            
             }
             if (DrawPortalButt)
             {

@@ -14,9 +14,9 @@ namespace AxMC_Realms_Client.UI
     public class Button
     {
         static Rectangle[] Source = new Rectangle[] { 
-            new(0, 64, 32, 16),
-            new(31, 64, 22, 16),
-            new(0, 80, 14, 14),
+            new(89, 59, 32, 16),
+            new(89, 43, 22, 16),
+            new(89, 29, 14, 14),
         };
         public string SetText { set { Text = value; origin = Game1.Arial.MeasureString(value) * .5f; } }
         public Rectangle rect;

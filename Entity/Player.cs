@@ -1,7 +1,6 @@
 ﻿using AxMC.Camera;
 using AxMC_Realms_Client.Classes;
 using AxMC_Realms_Client.Graphics;
-using AxMC_Realms_Client.Networking;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -19,7 +18,7 @@ namespace AxMC_Realms_Client.Entity
         public static int SquareOfSightStartIndex;
         public static ProgressBar HPbar;
         public static int XP = 0, Level = 0;
-        public static int[] Stats = { 2000,200, 100, 20, 0, 1 }; // HP, Mana, Damage, agility, armor, bullets
+        public static int[] Stats = { 2000, 200, 100, 20, 0, 1 }; // HP, Mana, Damage, agility, armor, bullets
         public static int Mana = 200;
         double AnimTimer = 1;
         double Shootcd = 1;
@@ -36,7 +35,7 @@ namespace AxMC_Realms_Client.Entity
             _bullet = new(BulletTexture);
             Width = 50;
             Height = 50;
-            HPbar = new(Color.LimeGreen,true, true, 2000,8);
+            HPbar = new(Color.LimeGreen, true, true, 2000, 8);
             HPbar.SetFactor(Stats[0], 30);
             int columns = 5;
             int rows = 3;
@@ -54,7 +53,7 @@ namespace AxMC_Realms_Client.Entity
             {
                 Bullet b = Game1._EnemyBullets[i];
                 if ((b.Position - Position).LengthSquared() <= 2500)
-                {   
+                {
                     isRemoved = ((HPbar.Progress -= b.Damage) <= 0);
                     UI.UI.HPBar.Progress = HPbar.Progress;
                     b.isRemoved = true;
@@ -208,7 +207,7 @@ namespace AxMC_Realms_Client.Entity
                 b.LifeSpan = 2;
                 b.Damage = Stats[1];
                 Shootcd = 1;
-                float someoffset = -1.5f + Stats[5] * 0.5f ;
+                float someoffset = -1.5f + Stats[5] * 0.5f;
                 for (int i = 0; i < Stats[5]; i++)
                 {
                     Bullet bb = b.Clone() as Bullet;
@@ -225,13 +224,15 @@ namespace AxMC_Realms_Client.Entity
         /// <returns>Start index of square of sight</returns>
         private void GetSquareOfSight()
         {
-            int DrawRadius = (int)(9f / Camera.CamZoom);
+            int DrawRadius = 20;
             float ratio = (float)Camera.View.Width / Camera.View.Height;
 
             xyCount.X = Math.Min(DrawRadius, TiledPos.X) + Math.Min(DrawRadius + 1, Map.Map.Size.X - TiledPos.X);
             xyCount.X = (int)(xyCount.X * ratio);
 
             xyCount.Y = Math.Min(DrawRadius, TiledPos.Y) + Math.Min(DrawRadius + 1, Map.Map.Size.Y - TiledPos.Y);
+            xyCount.Y = (int)(xyCount.Y * ratio);
+
 
             TiledPos.X = Math.Max(0, TiledPos.X - (int)(DrawRadius * ratio));
             TiledPos.Y = Math.Max(0, TiledPos.Y - DrawRadius);

@@ -12,7 +12,7 @@ namespace AxMC_Realms_Client.UI
         Button MoveUp, MoveDown, MoveLeft, MoveRight,
             SlotSize,
             Title;
-        Vector2 Position;
+        public Vector2 Position;
 
         public Options(int sw, int sh, UI ui)
         {
@@ -27,6 +27,15 @@ namespace AxMC_Realms_Client.UI
             Title = new((sw - 64) / 2,(int)Position.Y - 15 - 6, 64,32,ButtonType.Big, "Options");
 
             SlotSize = new((sw + width) / 2 - 42, (int)Position.Y + 16,28,28,ButtonType.Small, ui.SlotSizeMultiplier.ToString());
+        }
+        public void Resize(int sw, int sh)
+        {
+            Position = new((sw - width) * .5f, (sh - 300) * .5f);
+            // sorry for hardcode 15 is height of top corner in Panel
+            Title = new((sw - 64) / 2, (int)Position.Y - 16 - 6, 64, 32, ButtonType.Big, "Options");
+
+            SlotSize.rect = new((sw + width) / 2 - 42, (int)Position.Y + 16, 28, 28);
+
 
         }
         public void Update(UI ui)

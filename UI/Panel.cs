@@ -35,7 +35,7 @@ namespace AxMC_Realms_Client.UI
 
             sb.Draw(tex, pos, Corner[0], Color.White);
             sb.Draw(tex, pos + new Vector2(width-2, 0), Corner[1], Color.White);
-            sb.Draw(tex, pos + new Vector2(3, height-4), Corner[2], Color.White);
+            sb.Draw(tex, pos + new Vector2(2, height-4), Corner[2], Color.White);
             sb.Draw(tex, pos + new Vector2(width-3, height-4), Corner[3], Color.White);
         }
     }

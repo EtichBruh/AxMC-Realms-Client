@@ -114,7 +114,7 @@ namespace AxMC_Realms_Client
                 Console.WriteLine("Result not Ok");
             }
         }
-        Texture2D table, wood;
+        Texture2D table, wood, dirt;
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -128,6 +128,7 @@ namespace AxMC_Realms_Client
             basiceff.View = Matrix.CreateLookAt(new Vector3(0, 45, 90), Vector3.Zero, Vector3.UnitZ);
 
             wood = Content.Load<Texture2D>("Canopy");
+            dirt = Content.Load<Texture2D>("dirt");
 
             _outline = Content.Load<Effect>("outline");
             //_colorMask = Content.Load<Effect>("ColorMask");
@@ -243,7 +244,7 @@ namespace AxMC_Realms_Client
         {
             using (Texture2D tex = new(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight))
             {
-                var data = new Color[tex.Width* tex.Height];
+                var data = new Color[tex.Width * tex.Height];
                 GraphicsDevice.GetBackBufferData(data);
                 tex.SetData(data);
                 using (var stream = File.Create($"{Environment.CurrentDirectory}\\ScreenShots\\{DateTime.Now.ToString().Replace(':', '~')}.png"))
@@ -258,7 +259,35 @@ namespace AxMC_Realms_Client
             GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
-            var ppos = _sprites[0].Position;
+            var ppos = _sprites[0].Position * 0.02f;
+            var rot = Matrix.CreateRotationZ(Camera.RotDegr);
+            var roty = Matrix.CreateRotationY(MathHelper.ToRadians(-180));
+            var mesh = (BasicEffect)model.Meshes[0].Effects[0];
+
+
+            mesh.Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            for (int i = 0; i < Player.xyCount.X; i++)
+            {
+                for (int j = 0; j < Player.xyCount.Y; j++)
+                {
+                    var index = Player.SquareOfSightStartIndex + i + j * Map.Map.Size.X;
+                    if (index > MapTiles.Length) continue;
+                    if (MapTiles[index] is not null)
+                    {
+                        mesh.Texture = dirt;
+                        mesh.World =
+                        Matrix.CreateTranslation(-ppos.X - Player.TiledPos.X + i + 0.5f, Player.TiledPos.Y + j + 0.5f - ppos.Y, 0) * rot * roty;
+                        model.Meshes[0].Draw();
+                        continue;
+                    };
+                }
+            }
+            GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
+
+            rot = Matrix.CreateRotationZ(-Camera.RotDegr);
+
+            ppos = _sprites[0].Position;
 
             _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp);
 
@@ -277,7 +306,7 @@ namespace AxMC_Realms_Client
                     shade = shade < 0 || shade > 255 ? 0 : shade;
                     byte col = (byte)shade;
 
-                    _spriteBatch.Draw(Tile.TileSet, pos, Tile.SRects[Map.Map.byteMap[index]], new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
+                    if (col != 0) _spriteBatch.Draw(Tile.TileSet, pos, Tile.SRects[Map.Map.byteMap[index]], new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
                     pos.Y += 50;
                 }
             }
@@ -329,11 +358,7 @@ namespace AxMC_Realms_Client
             // some 3D
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            var rot = Matrix.CreateRotationZ(-Camera.RotDegr);
-            var mesh = (BasicEffect)model.Meshes[0].Effects[0];
             ppos *= 0.02f;
-
-            mesh.Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
 
             int pid = 0;
 
@@ -366,7 +391,7 @@ namespace AxMC_Realms_Client
 
             _spriteBatch.End();
 
-                base.Draw(gameTime);
+            base.Draw(gameTime);
         }
     }
 }
