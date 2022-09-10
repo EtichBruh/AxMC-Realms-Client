@@ -20,6 +20,7 @@ namespace AxMC_Realms_Client.Entity
         public static int XP = 0, Level = 0;
         public static int[] Stats = { 2000, 200, 100, 20, 0, 1 }; // HP, Mana, Damage, agility, armor, bullets
         public static int Mana = 200;
+        public bool AllowRotation = true;
         double AnimTimer = 1;
         double Shootcd = 1;
         Point[] Frames;
@@ -241,6 +242,20 @@ namespace AxMC_Realms_Client.Entity
         }
         private void RotateZoom()
         {
+            if (AllowRotation)
+            {
+                if (Input.KState.IsKeyDown(Input.RotateCameraLeft))
+                {
+                    Camera.RotDegr += 0.017453292f;
+                    Camera.RotDegr = Camera.RotDegr >= 360 ? 0 : Camera.RotDegr;
+                    Rotation = -Camera.RotDegr;
+                }
+                if (Input.KState.IsKeyDown(Input.RotateCameraRight))
+                {
+                    Camera.RotDegr -= 0.017453292f;
+                    Rotation = -Camera.RotDegr;
+                }
+            }
             if (Input.KState.IsKeyDown(Input.ZoomIn))
             {
                 Camera.CamZoom += 0.4f;
@@ -249,17 +264,6 @@ namespace AxMC_Realms_Client.Entity
             {
                 Camera.CamZoom -= 0.2f;
                 Camera.CamZoom = Camera.CamZoom <= 0.6f ? Camera.CamZoom = 0.6f : Camera.CamZoom;
-            }
-            if (Input.KState.IsKeyDown(Input.RotateCameraLeft))
-            {
-                Camera.RotDegr += 0.017453292f;
-                Camera.RotDegr = Camera.RotDegr >= 360 ? 0 : Camera.RotDegr;
-                Rotation = -Camera.RotDegr;
-            }
-            if (Input.KState.IsKeyDown(Input.RotateCameraRight))
-            {
-                Camera.RotDegr -= 0.017453292f;
-                Rotation = -Camera.RotDegr;
             }
             if (Input.KState.IsKeyDown(Input.ResetRotation))
             {

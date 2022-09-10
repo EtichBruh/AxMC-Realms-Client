@@ -150,7 +150,8 @@ namespace AxMC_Realms_Client
                 GraphicsDevice.Viewport.Height,
                 Content.Load<Texture2D>("slotconcept"),
                 Content.Load<Texture2D>("DropBagUI"),
-                Content.Load<Texture2D>("StatIcons"));
+                Content.Load<Texture2D>("StatIcons"),
+                _sprites[0] as Player);
             // TODO: use this.Content to load your game content here
         }
         const float tcfactor = 1f / (2.55f * 1.5f); // tile color factor
@@ -224,6 +225,10 @@ namespace AxMC_Realms_Client
             using (BinaryWriter bw = new(File.OpenWrite("Options")))
             {
                 bw.Write(_UI.SlotSizeMultiplier);
+                if (_sprites[0] is Player player)
+                {
+                    bw.Write(player.AllowRotation);
+                }
             }
             base.OnExiting(sender, args);
         }
@@ -259,13 +264,14 @@ namespace AxMC_Realms_Client
             GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
-            var ppos = _sprites[0].Position * 0.02f;
-            var rot = Matrix.CreateRotationZ(Camera.RotDegr);
-            var roty = Matrix.CreateRotationY(MathHelper.ToRadians(-180));
+            var ppos = _sprites[0].Position;
+            var rot = Matrix.CreateRotationZ(-Camera.RotDegr);
             var mesh = (BasicEffect)model.Meshes[0].Effects[0];
-
-
             mesh.Projection = _projectionMatrix * Matrix.CreateScale(Camera.CamZoom);
+
+            //var roty = Matrix.CreateRotationY(MathHelper.ToRadians(-180));
+            /*
+
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             for (int i = 0; i < Player.xyCount.X; i++)
             {
@@ -282,12 +288,7 @@ namespace AxMC_Realms_Client
                         continue;
                     };
                 }
-            }
-            GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
-
-            rot = Matrix.CreateRotationZ(-Camera.RotDegr);
-
-            ppos = _sprites[0].Position;
+            }*/
 
             _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp);
 

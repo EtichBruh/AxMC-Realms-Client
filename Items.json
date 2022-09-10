@@ -1,0 +1,75 @@
+[
+  {
+    "id": 0,
+    "Name": "Drip Armor",
+    "Description": "SUSSY DRIP ARMOR LOL",
+    "Stats": [
+      100,
+      50,
+      0,
+      0,
+      20
+    ],
+    "Source": {
+      "X": 0,
+      "Y": 1,
+      "Width": 18,
+      "Height": 18
+    }
+  },
+  {
+    "id": 1,
+    "Name": "Sussy staff",
+    "Description": "SUSSY STAFF LOL",
+    "Stats": [
+      100,
+      50,
+      0,
+      60,
+      20,
+      2
+    ],
+    "Source": {
+      "X": 18,
+      "Y": 0,
+      "Width": 18,
+      "Height": 18
+    }
+  },
+  {
+    "id": 2,
+    "Name": "Sussy staff different",
+    "Description": "SUSSY STAFF LOL",
+    "Stats": [
+      100,
+      50,
+      0,
+      0,
+      20
+    ],
+    "Source": {
+      "X": 36,
+      "Y": 0,
+      "Width": 18,
+      "Height": 18
+    }
+  },
+  {
+    "id": 3,
+    "Name": "Diamond",
+    "Description": "So we back in the mine...",
+    "Stats": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "Source": {
+      "X": 54,
+      "Y": 0,
+      "Width": 18,
+      "Height": 18
+    }
+  }
+]

@@ -36,14 +36,13 @@ namespace AxMC_Realms_Client.UI
         public float SlotSizeMultiplier { get { return slotsize; } set { slotsize = value; SlotResize(); } }
         float slotsize = 1;
 
-        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D stats)
+        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D stats, Player player)
         {
 
             SlotSprite = slot;
             BagUI = bag;
             StatIcons = stats;
             BagUISRect = BagUIRect;
-            opts = new(swidth, sheight, this);
 
             for (int i = 1; i < Inventory.Length; i++)
             {
@@ -63,17 +62,28 @@ namespace AxMC_Realms_Client.UI
             HPBar.SetFactor(Player.Stats[0], 32 * 4);
             MPBar.SetFactor(Player.Stats[1], 32 * 4);
 
+
+            if (File.Exists("Options"))
+                using (BinaryReader br = new(File.OpenRead("Options")))
+                {
+                    SlotSizeMultiplier = br.ReadSingle();
+                    player.AllowRotation = br.ReadBoolean();
+                }
+            else
+            {
+                SlotSizeMultiplier = 1;
+            }
+
+            opts = new(swidth, sheight, this, player);
+
             Resize(swidth, sheight);
 
-            using (BinaryReader br = new BinaryReader(File.OpenRead("Options")))
-            {
-                SlotSizeMultiplier = br.ReadSingle();
-            }
         }
 
         public void Resize(int SWidth, int SHeight)
         {
             opts.Resize(SWidth, SHeight);
+
             SWidth /= 2;
             int sHCenter = (int)(SHeight * 0.85f);
 
@@ -81,8 +91,6 @@ namespace AxMC_Realms_Client.UI
 
             BagUIRect.X = SWidth;
             BagUIRect.Y = SHeight - BagUIRect.Height;
-
-            var smth = -Inventory[0].Rect.Width / 2 + SWidth;
 
             // for future because its really hard to understand ( or maybe im sleepy asf today )
             var smthh = SWidth - Inventory[1].Rect.Width - Inventory[0].Rect.Width;// last equipment slot pos
@@ -121,7 +129,7 @@ namespace AxMC_Realms_Client.UI
 
             var s = Inventory[0];
             int ww = s.SrcRect.Width;
-            int hh = (int)(s.SrcRect.Height * mult - s.Rect.Height); 
+            int hh = (int)(s.SrcRect.Height * mult - s.Rect.Height);
 
             int temp = (int)(ww * mult - s.Rect.Width) + (int)(Inventory[1].SrcRect.Width * mult - Inventory[1].Rect.Width);
 
@@ -158,7 +166,7 @@ namespace AxMC_Realms_Client.UI
             }
             if (opts.Active)
             {
-                opts.Update(this);
+                opts.Update(this, entities[0] as Player);
                 return;
             }
 
@@ -205,15 +213,15 @@ namespace AxMC_Realms_Client.UI
             {
 
                 HPBar.Draw(sb);
-                var str = $"{ Player.HPbar.Progress}/{Player.Stats[0]}";
+                var str = $"{Player.HPbar.Progress}/{Player.Stats[0]}";
                 sb.DrawString(Game1.Arial, str, new Vector2(HPBar.Pos.X + 64 - Game1.Arial.MeasureString(str).X * .05f, HPBar.Pos.Y + 2), Color.White, 0, Vector2.Zero, 0.1f, 0, 0);
                 sb.Draw(SlotSprite, HPBar.Pos - Vector2.One, HPRect, Color.White, 0, Vector2.Zero, new Vector2(2.3f, 1), 0, 0);
 
                 MPBar.Draw(sb);
-                str = $"{ Player.Mana}/{Player.Stats[1]}";
+                str = $"{Player.Mana}/{Player.Stats[1]}";
                 sb.DrawString(Game1.Arial, str, new Vector2(MPBar.Pos.X + 64 - Game1.Arial.MeasureString(str).X * .05f, HPBar.Pos.Y + 2), Color.White, 0, Vector2.Zero, 0.1f, 0, 0);
                 sb.Draw(SlotSprite, MPBar.Pos - Vector2.One, MPRect, Color.White, 0, Vector2.Zero, new Vector2(2.3f, 1), 0, 0);
-            
+
             }
             if (DrawPortalButt)
             {
