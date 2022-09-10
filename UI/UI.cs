@@ -3,44 +3,60 @@ using AxMC_Realms_Client.Entity;
 using AxMC_Realms_Client.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using nekoT;
 using Nez;
+using System.IO;
 
 namespace AxMC_Realms_Client.UI
 {
     public class UI
     {
-        public Texture2D SlotSprite, BagUI, PEnterUI, ExpJar, StatIcons;
-
-        public Rectangle BagUISRect, BagUIRect = new(0, 0, 64, 32);
-        public Rectangle ExpJarRect = new(0, 0, 32, 92);
-        public Rectangle PEnterUIRect = new(0, 0, 32, 16);
-        public Rectangle StatsRect = new(0, 0, 16, 16);
-
+        public static Texture2D SlotSprite;
         public static ProgressBar HPBar, MPBar;
+        public static Rectangle MRect;
 
-        Slot[] Invetory = new Slot[12];
+        public Texture2D BagUI, PEnterUI, StatIcons;
+        public Rectangle ExpJarRect = new(0, 0, 32, 92),
+            ExpJarSRect = new(57, 0, 32, 92),
+            PEnterUIRect = new(0, 0, 32, 16),
+            StatsRect = new(0, 0, 16, 16),
+            BagUISRect, BagUIRect = new(0, 0, 64, 32),
+            HPRect = new(0, 64, 57, 16), MPRect = new(0, 80, 57, 17);
+
+        Slot[] Inventory = new Slot[12];
+        Button PortalEnter = new(ButtonType.Big, "Enter");
+        Options opts;
         //Slot[] Equipment = new Slot[4];
 
         bool isDrag = false;
         bool DrawPortalButt = false;
-        int DraggingSlot;
-        byte DraggingItem = 0;
+        int DragSlot = -1;
+        int DragItem = -1;
+        public float SlotSizeMultiplier { get { return slotsize; } set { slotsize = value; SlotResize(); } }
+        float slotsize = 1;
 
-        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D PortalEnter, Texture2D expjar, Texture2D stats)
+        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D stats)
         {
+
             SlotSprite = slot;
             BagUI = bag;
-            PEnterUI = PortalEnter;
-            ExpJar = expjar;
             StatIcons = stats;
             BagUISRect = BagUIRect;
-            for (int i = 0; i < Invetory.Length; i++)
+            opts = new(swidth, sheight, this);
+
+            for (int i = 1; i < Inventory.Length; i++)
             {
-                if (i > 3 && i < 7) Invetory[i] = new((byte)(i - 4));
-                else Invetory[i] = new();
-                Invetory[i].SrcRect.X = i < 4 ? 32 : 0;
+                if (i == 3 && i == 4 && i == 11) continue;
+                Inventory[i] = new();
             }
+
+            Inventory[0] = new(0, 0, 28, 32);
+            Inventory[3] = new(28, 0, 29, 32);
+
+            Inventory[4] = new(0, 32, 28, 32);
+            Inventory[11] = new(28, 32, 29, 32);
+
             HPBar = new(Color.Red, false, false, Player.HPbar.Progress, 14);
             MPBar = new(Color.Blue, false, false, 200, 14);
 
@@ -48,179 +64,249 @@ namespace AxMC_Realms_Client.UI
             MPBar.SetFactor(Player.Stats[1], 32 * 4);
 
             Resize(swidth, sheight);
+
+            using (BinaryReader br = new BinaryReader(File.OpenRead("Options")))
+            {
+                SlotSizeMultiplier = br.ReadSingle();
+            }
         }
+
         public void Resize(int SWidth, int SHeight)
         {
+            opts.Resize(SWidth, SHeight);
             SWidth /= 2;
-            int sHCenter = (int)(SHeight * 0.8f);
+            int sHCenter = (int)(SHeight * 0.85f);
 
             StatsRect.Y = SHeight / 2;
 
             BagUIRect.X = SWidth;
             BagUIRect.Y = SHeight - BagUIRect.Height;
 
-            var smth = -Invetory[0].Rect.Width / 2 + SWidth;
-            for (int x = 0; x < Invetory.Length; x++)
+            var smth = -Inventory[0].Rect.Width / 2 + SWidth;
+
+            // for future because its really hard to understand ( or maybe im sleepy asf today )
+            var smthh = SWidth - Inventory[1].Rect.Width - Inventory[0].Rect.Width;// last equipment slot pos
+            var smthhh = smthh - Inventory[1].Rect.Width * 2;// position - 2 more slots 
+
+            Inventory[0].Rect.Y = sHCenter;
+            Inventory[0].Rect.X = smthh;
+
+            Inventory[4].Rect.X = smthhh;
+
+            for (int x = 1; x < Inventory.Length; x++)
             {
-                if (x < 4)
-                {
-                    Invetory[x].Rect.Y = sHCenter;
-                    Invetory[x].Rect.X = (x - 1) * (Invetory[x].Rect.Width) + smth;
-                }
-                else
-                {
-                    Invetory[x].Rect.Y = sHCenter + 32; // 32 is height of rect
-                    Invetory[x].Rect.X = (x - 4 - 3) * (Invetory[x].Rect.Width) + smth;
-                }
+                var slot = Inventory[x];
+                slot.Rect.Y = sHCenter + slot.SrcRect.Y + (x > 4 && x < Inventory.Length - 1 ? 32 : 0);
+                if (x == 4) continue;
+                slot.Rect.X = Inventory[x - 1].Rect.Right;
             }
+            UIResize();
+        }
+        void UIResize()
+        {
+            ExpJarRect.X = Inventory[4].Rect.Left - ExpJarSRect.Width;
+            ExpJarRect.Y = Inventory[4].Rect.Bottom - ExpJarSRect.Height;
 
-            var temp = Invetory[4].Rect.Size.MultiplyBy(.5f);
+            int HpBarY = Inventory[0].Rect.Y - 15;
+            int HpBarX = ExpJarRect.Right + 1;
 
-            ExpJarRect.X = Invetory[4].Rect.X - temp.X - ExpJar.Width;
-            ExpJarRect.Y = Invetory[4].Rect.Y + temp.Y - ExpJar.Height;
+            HPBar.Update(HpBarX, HpBarY);
+            MPBar.Update(HpBarX + 32 * 4 + 1, HpBarY);
 
-            int HpBarY = Invetory[0].Rect.Y - 14 - 16;
-            int HpBarX = ExpJarRect.Right;
+            PortalEnter.rect = new(Inventory[3].Rect.Right, HpBarY + 14, 64, 32);
+        }
+        public void SlotResize()//im so sorry for no comments here
+        {
+            float mult = slotsize;
 
-            HPBar.Update(HpBarX, HpBarY - 10);
-            MPBar.Update(HpBarX + 32 * 4, HpBarY - 10);
+            var s = Inventory[0];
+            int ww = s.SrcRect.Width;
+            int hh = (int)(s.SrcRect.Height * mult - s.Rect.Height); 
 
-            PEnterUIRect = new(Invetory[3].Rect.X + 16, HpBarY + 14, Invetory[0].Rect.Width * 2, 32);
+            int temp = (int)(ww * mult - s.Rect.Width) + (int)(Inventory[1].SrcRect.Width * mult - Inventory[1].Rect.Width);
+
+            s.Rect.X -= temp;
+            s.Rect.Y -= hh;
+            s.Rect.Width = (int)(mult * ww);
+            s.Rect.Height = (int)(mult * s.SrcRect.Height);
+
+            var ss = Inventory[4];
+            ss.Rect.X -= temp + (int)(Inventory[1].SrcRect.Width * mult - Inventory[1].Rect.Width) * 2;
+            ss.Rect.Y -= hh;
+            ss.Rect.Width = (int)(mult * ss.SrcRect.Width);
+            ss.Rect.Height = (int)(mult * ss.SrcRect.Height);
+
+            for (int i = 1; i < Inventory.Length; i++)
+            {
+                if (i == 4) continue;
+
+                var slot = Inventory[i];
+                slot.Rect.Width = (int)(mult * slot.SrcRect.Width);
+                slot.Rect.Height = (int)(mult * slot.SrcRect.Height);
+                slot.Rect.X = Inventory[i - 1].Rect.Right;
+                slot.Rect.Y -= hh;
+            }
+            UIResize();
         }
         public void Update(FastList<SpriteAtlas> entities)
         {
+            MRect = new Rectangle(Input.MState.Position, new Point(1, 1));
+
+            if (Input.PKState.IsKeyDown(Keys.Escape) && !Input.KState.IsKeyDown(Keys.Escape))
+            {
+                opts.Active = !opts.Active;
+            }
+            if (opts.Active)
+            {
+                opts.Update(this);
+                return;
+            }
+
             HoveringOnSlot(entities);
 
             if (BasicEntity.GetNear() is Portal portal)
             {
                 DrawPortalButt = true;
-                if (Input.KState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Enter) || Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed &&
-                    PEnterUIRect.Intersects(new Rectangle(Input.MState.Position, new Point(1, 1))))
+                if (Input.KState.IsKeyDown(Keys.Enter) || PortalEnter.Update())
                 {
                     string a = ((Map.Maps)portal.id).ToString();
                     Map.Map.Load(a, entities);
                 }
             }
-            else { DrawPortalButt = false; }
+            else
+            {
+                DrawPortalButt = false;
+            }
         }
+
         const float factor = 1f / (100f / 92f);
         public void Draw(SpriteBatch sb, Effect outline)
         {
-            // 50
-            sb.DrawString(Game1.Arial, Player.Stats[3].ToString(), new Vector2(StatsRect.Right, StatsRect.Y), Color.LightGreen, 0, new(0, 50), 0.1f, 0, 0);
-            sb.Draw(StatIcons, StatsRect, new Rectangle(0, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
-            // 74
+            var statpos = new Vector2(StatsRect.Right, StatsRect.Y);
+            sb.DrawString(Game1.Arial, Player.Stats[3].ToString(), statpos, Color.LightGreen, 0, new(0, 50), 0.1f, 0, 0);
+            sb.DrawString(Game1.Arial, Player.Stats[2].ToString(), statpos + new Vector2(0, 24), Color.DarkRed, 0, new(0, 50), 0.1f, 0, 0);
+            sb.DrawString(Game1.Arial, Player.Stats[4].ToString(), statpos - new Vector2(0, 24), Color.Gray, 0, new(0, 50), 0.1f, 0, 0);
+
+            sb.Draw(StatIcons, StatsRect, new(0, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
             StatsRect.Y += 16 + 8;
-            sb.Draw(StatIcons, StatsRect, new Rectangle(32, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
-            sb.DrawString(Game1.Arial, Player.Stats[2].ToString(), new Vector2(StatsRect.Right, StatsRect.Y), Color.DarkRed, 0, new(0, 50), 0.1f, 0, 0);
-            // 
+            sb.Draw(StatIcons, StatsRect, new(32, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
             StatsRect.Y -= 32 + 16;
-            sb.DrawString(Game1.Arial, Player.Stats[4].ToString(), new Vector2(StatsRect.Right, StatsRect.Y), Color.Gray, 0, new(0, 50), 0.1f, 0, 0);
-            sb.Draw(StatIcons, StatsRect, new Rectangle(64, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
+            sb.Draw(StatIcons, StatsRect, new(64, 0, 32, 32), Color.White, 0, new(0, 16), 0, 0);
 
             StatsRect.Y += 16 + 8;// Reset back
 
             if (Player.XP > 0)
             {
                 int height = (int)(Player.XP * factor);
-                sb.Draw(ProgressBar.Pixel, new Rectangle(ExpJarRect.X, ExpJarRect.Bottom - height - 10, ExpJarRect.Width, height), Color.LightGray);
+                sb.Draw(ProgressBar.Pixel, new Rectangle(ExpJarRect.X, ExpJarRect.Bottom - height - 10, ExpJarRect.Width, height), Color.DarkRed);
             }
-            if (Player.HPbar.Progress > 0)
+
+            if (Player.HPbar.Progress > 0) // else player is dead LMAO :joy:
             {
-                //var rect = new Rectangle(ExpJarRect.Right, Invetory[0].Rect.Y - 14 - 16, (int)(((float)Player.HPbar.Progress / Player.Stats[0]) * 32 * 4), 14);
-                //sb.Draw(ProgressBar.Pixel, rect, Color.Red);
+
                 HPBar.Draw(sb);
-                MPBar.Draw(sb);
                 var str = $"{ Player.HPbar.Progress}/{Player.Stats[0]}";
                 sb.DrawString(Game1.Arial, str, new Vector2(HPBar.Pos.X + 64 - Game1.Arial.MeasureString(str).X * .05f, HPBar.Pos.Y + 2), Color.White, 0, Vector2.Zero, 0.1f, 0, 0);
-                str = $"100/100";
+                sb.Draw(SlotSprite, HPBar.Pos - Vector2.One, HPRect, Color.White, 0, Vector2.Zero, new Vector2(2.3f, 1), 0, 0);
+
+                MPBar.Draw(sb);
+                str = $"{ Player.Mana}/{Player.Stats[1]}";
                 sb.DrawString(Game1.Arial, str, new Vector2(MPBar.Pos.X + 64 - Game1.Arial.MeasureString(str).X * .05f, HPBar.Pos.Y + 2), Color.White, 0, Vector2.Zero, 0.1f, 0, 0);
+                sb.Draw(SlotSprite, MPBar.Pos - Vector2.One, MPRect, Color.White, 0, Vector2.Zero, new Vector2(2.3f, 1), 0, 0);
+            
             }
             if (DrawPortalButt)
             {
-                sb.Draw(PEnterUI, PEnterUIRect, Color.White);
+                PortalEnter.Draw(sb);
             }
-            sb.Draw(ExpJar, ExpJarRect, Color.White); // Jar is in front of liquid
+            sb.Draw(SlotSprite, ExpJarRect, ExpJarSRect, Color.White); // Jar is in front of liquid
             sb.End();
+
+            outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
             sb.Begin(samplerState: SamplerState.PointClamp, effect: outline);
-            for (int i = 0; i < Invetory.Length; i++)
+            for (int i = 0; i < Inventory.Length; i++)
             {
-                Invetory[i].Draw(sb, SlotSprite);// Draw inv slot
+                Inventory[i].Draw(sb, SlotSprite);// Draw inv slot
             }
             sb.End();
+
             sb.Begin(samplerState: SamplerState.PointClamp);
-            if (BasicEntity.NInteract != -1)
+            if (BasicEntity.GetNear() is Bag bag)
             {
-                if (BasicEntity.GetNear() is Bag bag)
+                int len = bag.items.Length;
+                if (len != 2)
                 {
-                    int len = bag.items.Length;
-                    if (len != 2)
+                    int prevX = BagUIRect.X, prevY = BagUIRect.Y;
+                    int prevSW = 15 * (len - 1); // Get 1st segment position
+                    BagUIRect.Width = BagUISRect.Width = 18; // Since by default src rect XY is 0 only set width
+
+                    BagUIRect.X += prevSW;
+                    BagUISRect.X = 46;
+                    sb.Draw(BagUI, BagUIRect, BagUISRect, Color.White); // Draw last segment
+
+                    BagUISRect.X = 0;
+                    BagUIRect.X = prevX - prevSW - 18;
+                    sb.Draw(BagUI, BagUIRect, BagUISRect, Color.White); // Draw 1st segment
+
+                    BagUIRect.Y += 2;
+                    BagUISRect.Y += 2;
+                    BagUIRect.X += 18 - (BagUIRect.Width = BagUIRect.Height = 30);
+                    var slotRect = new Rectangle(17, 2, 30, 30);
+                    Vector2 itempos = new(BagUIRect.X, BagUIRect.Y + BagUI.Height * .5f); // im not sure but its made to optimize
+
+                    for (int i = 0; i < len; i++)
                     {
-                        int prevX = BagUIRect.X, prevY = BagUIRect.Y;
-                        int prevSW = 15 * (len - 1); // Get 1st segment position
+                        BagUIRect.X += BagUIRect.Width;
+                        itempos.X += BagUIRect.Width;
+                        if (i < len - 1) sb.Draw(BagUI, BagUIRect, slotRect, Color.White); // Draw slot
 
-                        BagUIRect.Width = BagUISRect.Width = 18; // Since by default src rect XY is 0 only set width
-
-                        BagUIRect.X += prevSW;
-                        BagUISRect.X = 46;
-                        sb.Draw(BagUI, BagUIRect, BagUISRect, Color.White); // Draw last segment
-
-                        BagUISRect.X = 0;
-                        BagUIRect.X = prevX - prevSW - 18;
-                        sb.Draw(BagUI, BagUIRect, BagUISRect, Color.White); // Draw 1st segment
-
-                        BagUIRect.Y += 2;
-                        BagUISRect.Y += 2;
-                        BagUIRect.X += 18 - (BagUIRect.Width = BagUIRect.Height = 30);
-                        var slotRect = new Rectangle(17, 2, 30, 30);
-                        Vector2 itempos = new(BagUIRect.X, BagUIRect.Y + BagUI.Height * .5f); // im not sure but its made to optimize
-                        var mouse = new Rectangle(Input.MState.Position, new Point(1, 1));
-
-                        for (int i = 0; i < len; i++)
-                        {
-                            BagUIRect.X += BagUIRect.Width;
-                            itempos.X += BagUIRect.Width;
-                            if (i < len - 1) sb.Draw(BagUI, BagUIRect, slotRect, Color.White); // Draw slot
-
-                            Item.Draw(sb, itempos, 30, new Rectangle((int)itempos.X - 18, BagUIRect.Y, 30, 30).Intersects(mouse), bag.items[i]);
-                        }
-                        BagUISRect = new(0, 0, 64, 32);
-                        BagUIRect = new(prevX, prevY, 64, 32);// reset rects back
+                        Item.Draw(sb, itempos, 30, new Rectangle((int)itempos.X - 18, BagUIRect.Y, 30, 30).Intersects(MRect), bag.items[i]);
                     }
-                    else if (len == 2)
-                    {
-                        sb.Draw(BagUI, BagUIRect, null, Color.White, 0, new(BagUI.Width * .5f, 0), 0, 0);
-                        float y = BagUIRect.Y + BagUI.Height * .5f;
-                        Item.Draw(sb, new(BagUIRect.X - BagUIRect.Width * .25f, y), 30, false, bag.items[0]);
-                        Item.Draw(sb, new(BagUIRect.X + BagUIRect.Width * .25f, y), 30, false, bag.items[1]);
-                    }
+                    BagUISRect = new(0, 0, 64, 32);
+                    BagUIRect = new(prevX, prevY, 64, 32);// reset rects back
                 }
-                //else sb.Draw(PEnterUI, PEnterUIRect, Color.White);
+                else if (len == 2)
+                {
+                    sb.Draw(BagUI, BagUIRect, null, Color.White, 0, new(BagUI.Width * .5f, 0), 0, 0);
+                    float y = BagUIRect.Y + BagUI.Height * .5f;
+                    Item.Draw(sb, new(BagUIRect.X - BagUIRect.Width * .25f, y), 30, false, bag.items[0]);
+                    Item.Draw(sb, new(BagUIRect.X + BagUIRect.Width * .25f, y), 30, false, bag.items[1]);
+                }
             }
+            if (opts.Active)
+            {
+                opts.Draw(sb);
+            }
+            sb.End();
+
+            //outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
+            sb.Begin(samplerState: SamplerState.PointClamp, effect: outline);
             if (isDrag)
             {
-                if (DraggingItem != 0)
+                if (DragItem != -1)
                 {
-                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, DraggingItem);
+                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, DragItem);
                 }
                 else
                 {
-                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, Invetory[DraggingSlot].item);
+                    Item.Draw(sb, Input.MState.Position.ToVector2(), 32, false, Inventory[DragSlot].item);
                 }
             }
         }
+        #region SlotHovering
         void HoveringOnSlot(FastList<SpriteAtlas> ents)
         {
-            var index = new Rectangle(Input.MState.Position, new Point(1, 1));
+            bool LBpressed = Input.MState.LeftButton == ButtonState.Pressed;
+            bool LBreleased = Input.MState.LeftButton == ButtonState.Released;
             if (BasicEntity.NInteract != -1 && BasicEntity.InteractEnt[BasicEntity.NInteract] is Bag bag)
             {
                 var itemRect = BagUIRect;
                 itemRect.X -= 15 * (bag.items.Length - 1) + 30 + 18; // + 18 because 1 slot is 2 drawn slot segment and theyre offset by 1st segment width
                 for (int i = 0; i < bag.items.Length; i++)
                 {
-                    if (!isDrag && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed & itemRect.Intersects(index))
+                    if (!isDrag && LBpressed && itemRect.Intersects(MRect))
                     {
-                        DraggingItem = bag.items[i];
+                        DragItem = bag.items[i];
                         isDrag = true;
                         if (bag.items.Length == 1)
                         {
@@ -234,60 +320,58 @@ namespace AxMC_Realms_Client.UI
                     itemRect.X += 30;
                 }
             }
-            for (int i = 0; i < Invetory.Length; i++)
+            for (int i = 0; i < Inventory.Length; i++)
             {
-                var slot = Invetory[i];
+                var slot = Inventory[i];
                 var r = slot.Rect;
-                r.X -= r.Width / 2;
-                r.Y -= r.Height / 2;
-                if (slot.mouseHoverOn = r.Intersects(index))
+
+                if (slot.mouseHoverOn = r.Intersects(MRect))
                 {
-                    if (!isDrag && slot.item != 0 && DraggingItem == 0 &&
-                    Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed)
+                    if (!isDrag && slot.item != -1 && DragItem == -1 && LBpressed)
                     {
                         isDrag = true;
 
-                        DraggingSlot = i;
+                        DragSlot = i;
                     }
                 }
-                if (isDrag && DraggingSlot != i && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
+                if (isDrag && DragSlot != i && LBreleased)
                 {
-                    if (DraggingItem != 0 && slot.mouseHoverOn && slot.item == 0) // this is for dragging for non inv slot
+                    if (DragItem != -1 && slot.mouseHoverOn && slot.item == -1) // this is for dragging for non inv slot
                     {
-                        slot.item = DraggingItem;
+                        slot.item = DragItem;
                         if (i < 4)
                         {
-                            for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[DraggingItem].Stats[j];
+                            for (int j = 0; j < Item.items[DragItem].Stats.Length; j++) Player.Stats[j] += Item.items[DragItem].Stats[j];
                         }
-                        DraggingItem = 0;
+                        DragItem = -1;
                         isDrag = false;
 
                         continue;
                     }
-                    else if (slot.mouseHoverOn && DraggingItem == 0)
+                    else if (slot.mouseHoverOn && DragItem == -1)
                     {
-                        var SwapItem = Invetory[DraggingSlot].item;
+                        var SwapItem = Inventory[DragSlot].item;
 
-                        Invetory[DraggingSlot].item = slot.item;
+                        Inventory[DragSlot].item = slot.item;
                         slot.item = SwapItem;
 
                         isDrag = false;
 
-                        if (i < 4 && DraggingSlot >= 4)
+                        if (i < 4 && DragSlot >= 4)
                         {// this is when dragged in equip slots
                             CalcStats(slot.item, true);
                         }
-                        else if (i >= 4 && DraggingSlot < 4)
+                        else if (i >= 4 && DragSlot < 4)
                         {//this is when dragged out of equip slots
                             CalcStats(slot.item, false);
                         }
                     }
                 }
             }
-            if (isDrag && DraggingItem == 0 && Input.MState.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
+            if (isDrag && DragItem == -1 && LBreleased)
             {
-                byte DragItem = Invetory[DraggingSlot].item;
-                if ( BasicEntity.GetNear() is Bag _bag)
+                var DragItem = Inventory[DragSlot].item;
+                if (BasicEntity.GetNear() is Bag _bag)
                 {
                     _bag.items.Add(DragItem);
                 }
@@ -295,25 +379,27 @@ namespace AxMC_Realms_Client.UI
                 {
                     BasicEntity.Add(new Bag((int)ents[0].Position.X, (int)ents[0].Position.Y) { items = new() { Length = 1, Buffer = new[] { DragItem } } });
                 }
-                Invetory[DraggingSlot].item = 0;
-                if (DraggingSlot < 4)
+                Inventory[DragSlot].item = -1;
+                if (DragSlot < 4)
                 {
                     CalcStats(DragItem, false);
                 }
                 isDrag = false;
             }
         }
+        #endregion
+
         void CalcStats(int item, bool DraggedInEquip)
         {
-            var _item = Invetory[DraggingSlot].item;
+            var _item = Inventory[DragSlot].item;
             if (DraggedInEquip)
             {
-                if (Invetory[DraggingSlot].item != 0) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[_item].Stats[j];
-                for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[item].Stats[j];
+                if (Inventory[DragSlot].item != -1) for (int j = 0; j < Item.items[item].Stats.Length; j++) Player.Stats[j] -= Item.items[_item].Stats[j];
+                for (int j = 0; j < Item.items[item].Stats.Length; j++) Player.Stats[j] += Item.items[item].Stats[j];
                 return;
             }
-            if (Invetory[DraggingSlot].item != 0) for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] += Item.items[_item].Stats[j];
-            for (int j = 0; j < Player.Stats.Length; j++) Player.Stats[j] -= Item.items[item].Stats[j];
+            if (Inventory[DragSlot].item != -1) for (int j = 0; j < Item.items[item].Stats.Length; j++) Player.Stats[j] += Item.items[_item].Stats[j];
+            for (int j = 0; j < Item.items[item].Stats.Length; j++) Player.Stats[j] -= Item.items[item].Stats[j];
         }
     }
 }

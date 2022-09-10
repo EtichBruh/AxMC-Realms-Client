@@ -1,42 +1,31 @@
-﻿using AxMC_Realms_Client.Classes;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AxMC_Realms_Client.UI
 {
     class Slot
     {
-        public byte item;
-        public Rectangle Rect = new(0,0,32,32);
-        public Rectangle SrcRect = new(0, 0, 32, 32);
+        public int item = -1;
+        public Rectangle Rect = new(0, 0, 25, 25);
+        public Rectangle SrcRect = new(89, 0, 25, 25);
         public bool mouseHoverOn;
         //public bool DrawStats;
-        public Slot(byte? itemid = null)
+        public Slot(int itemid = -1,int sourceY = 4)
         {
-                item = itemid ?? 0;
+            item = itemid;
+            SrcRect.Y += sourceY;
+        }
+        public Slot(int x, int y, int width, int height)
+        {
+            Rect = SrcRect = new(x, y, width, height);
         }
         public void Draw(SpriteBatch sb, Texture2D slotsprite)
         {
-            sb.Draw(slotsprite, Rect, SrcRect, new(127,127,127,127), 0, new Vector2(16, 16), 0, 0); // Draw slot
-            if (item != 0)
+                sb.Draw(slotsprite, Rect, SrcRect, new(127, 127, 127, 127)); // Draw slot
+            if (item != -1)
             {
-                Item.Draw(sb, Rect.Location.ToVector2(),26, mouseHoverOn, item);
+                Item.Draw(sb, Rect.Center.ToVector2(), 16 , mouseHoverOn, item);
             }
         }
     }
 }
-/*Corner.X = 16;
-Corner.Width = 10;
-var a = Game1.Arial.MeasureString(slotitem.Description);
-for(int x = 0; x < a.X; x++)
-{
-    Rect.X += x;
-    sb.Draw(UI.SlotSprite, Rect, Corner, Color.White);
-}
-sb.Draw(UI.SlotSprite, Rect, Corner, Color.White);
-sb.Draw(UI.SlotSprite, Rect, Corner, Color.White);*/ //something for future desc background

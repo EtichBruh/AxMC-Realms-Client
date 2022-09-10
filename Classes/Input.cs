@@ -7,7 +7,7 @@ namespace AxMC_Realms_Client.Classes
     {
         public static Keys MoveUp, MoveRight, MoveLeft, MoveDown, RotateCameraLeft, RotateCameraRight, ResetRotation, ZoomOut, ZoomIn;
         public static MouseState MState;
-        public static KeyboardState KState;
+        public static KeyboardState PKState,KState;
         public static void setKeys()
         {
             MoveUp = Keys.W;

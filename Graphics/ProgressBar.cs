@@ -3,6 +3,7 @@ using AxMC_Realms_Client.Classes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using nekoT;
+using System;
 
 namespace AxMC_Realms_Client.Graphics
 {
@@ -49,12 +50,11 @@ namespace AxMC_Realms_Client.Graphics
         }
         /// <summary>
         /// Updates Position of Health Bar
-        /// TargetY equal targetY + half of target size Height
         /// </summary>
         public void Update(float TargetX, float TargetY)
         {
             Pos.X = TargetX;
-            Pos.Y = TargetY + 10;
+            Pos.Y = TargetY;
         }
         public void SetFactor(int Max,int width)
         {
@@ -62,7 +62,7 @@ namespace AxMC_Realms_Client.Graphics
         }
         public void Draw(SpriteBatch SB)
         {
-            SB.Draw(Pixel, Pos, null, col,Rotate? -Camera.RotDegr: 0,_hor? Vector2.One * .5f  : Vector2.Zero, new Vector2(Progress*Factor, height), SpriteEffects.None,0);
+            SB.Draw(Pixel, Pos, null, col,Rotate? -Camera.RotDegr: 0,_hor? new(0.5f,-2.75f)  : Vector2.Zero, new Vector2(Progress*Factor, height), SpriteEffects.None,0);
         }
     }
 }
