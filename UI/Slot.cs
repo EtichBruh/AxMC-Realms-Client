@@ -21,10 +21,13 @@ namespace AxMC_Realms_Client.UI
         }
         public void Draw(SpriteBatch sb, Texture2D slotsprite)
         {
-                sb.Draw(slotsprite, Rect, SrcRect, new(127, 127, 127, 127)); // Draw slot
+                sb.Draw(slotsprite, Rect, SrcRect, new(255, 255, 255, 127)); // Draw slot
+        }
+        public void DrawItem(SpriteBatch sb)
+        {
             if (item != -1)
             {
-                Item.Draw(sb, Rect.Center.ToVector2(), 16 , mouseHoverOn, item);
+                Item.Draw(sb, Rect.Center.ToVector2(), 16, mouseHoverOn, item);
             }
         }
     }

@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using nekoT;
 using Nez;
+using Penumbra;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,6 +37,7 @@ namespace AxMC_Realms_Client
 
         Model model;
         UI.UI _UI;
+        public static PenumbraComponent penumbra;
 
         /*Discord.Discord ds = new(975495189948923975, 0); // (ulong)Discord.CreateFlags.Default;
         Activity activity = new()
@@ -63,7 +65,7 @@ namespace AxMC_Realms_Client
             }
         };*/
 
-        //private string[] WindowTitleAddition = new string[3] { "ZAMN!", "Daaamn what you know about rollin down in the deep?", "13yo kid moment" };
+        //private string[] WindowTitleAddition = new string[3] { "ZAMN!", "Daaamn what you know about rollin down in the deep?", "14yo kid moment" };
         public Game1()
         {
 
@@ -72,8 +74,12 @@ namespace AxMC_Realms_Client
             IsMouseVisible = true;
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += Window_ClientSizeChanged;
-
+            penumbra = new(this)
+            {
+                AmbientColor = new Color(new Vector3(0.1f))
+            };
             _graphics.GraphicsProfile = GraphicsProfile.HiDef;
+            Services.AddService(penumbra);
             //Window.Title = Window.Title + ": " + WindowTitleAddition[rand.Next(0, 2)];
         }
 
@@ -148,10 +154,15 @@ namespace AxMC_Realms_Client
 
             _UI = new(GraphicsDevice.Viewport.Width,
                 GraphicsDevice.Viewport.Height,
+                _graphics,
                 Content.Load<Texture2D>("slotconcept"),
                 Content.Load<Texture2D>("DropBagUI"),
                 Content.Load<Texture2D>("StatIcons"),
                 _sprites[0] as Player);
+            penumbra.Initialize();
+
+            penumbra.Lights.Add((_sprites[0] as Player).Light);
+
             // TODO: use this.Content to load your game content here
         }
         const float tcfactor = 1f / (2.55f * 1.5f); // tile color factor
@@ -182,7 +193,7 @@ namespace AxMC_Realms_Client
 
                 _spritesToAdd.Clear();
 
-                _UI.Update(_sprites);
+                _UI.Update(_sprites, _graphics);
 
                 for (int i = 0; i < _sprites.Length; i++)
                 {
@@ -211,6 +222,7 @@ namespace AxMC_Realms_Client
                 }
 
                 Camera.Follow(_sprites[0].Position);
+                penumbra.Transform = Camera.Transform;
 
                 if (Input.PKState.IsKeyDown(Keys.NumPad5) && !Input.KState.IsKeyDown(Keys.NumPad5))
                     TakeScreenshot(gameTime);
@@ -229,6 +241,7 @@ namespace AxMC_Realms_Client
                 {
                     bw.Write(player.AllowRotation);
                 }
+                bw.Write(_graphics.SynchronizeWithVerticalRetrace);
             }
             base.OnExiting(sender, args);
         }
@@ -289,6 +302,7 @@ namespace AxMC_Realms_Client
                     };
                 }
             }*/
+            penumbra.BeginDraw();
 
             _spriteBatch.Begin(transformMatrix: Camera.Transform, samplerState: SamplerState.PointClamp);
 
@@ -303,11 +317,7 @@ namespace AxMC_Realms_Client
                     if (index > MapTiles.Length) continue;
                     if (MapTiles[index] is null) { pos.Y += 50; continue; }
 
-                    var shade = 255 - (pos - ppos).Length() * tcfactor;
-                    shade = shade < 0 || shade > 255 ? 0 : shade;
-                    byte col = (byte)shade;
-
-                    if (col != 0) _spriteBatch.Draw(Tile.TileSet, pos, Tile.SRects[Map.Map.byteMap[index]], new Color(col, col, col, byte.MaxValue), 0, Vector2.Zero, scale: 3.125f, 0, 0);
+                    _spriteBatch.Draw(Tile.TileSet, pos, Tile.SRects[Map.Map.byteMap[index]], Color.White, 0, Vector2.Zero, scale: 3.125f, 0, 0);
                     pos.Y += 50;
                 }
             }
@@ -383,6 +393,7 @@ namespace AxMC_Realms_Client
                 }
             }
             // not some 3D :(
+            penumbra.Draw(gameTime);
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 

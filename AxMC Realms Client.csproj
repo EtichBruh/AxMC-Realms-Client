@@ -18,8 +18,11 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="penumbra\**" />
     <Compile Remove="UI\UI.cs~RF682dd635.TMP\**" />
+    <EmbeddedResource Remove="penumbra\**" />
     <EmbeddedResource Remove="UI\UI.cs~RF682dd635.TMP\**" />
+    <None Remove="penumbra\**" />
     <None Remove="UI\UI.cs~RF682dd635.TMP\**" />
   </ItemGroup>
   <ItemGroup>
@@ -29,7 +32,10 @@
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.1.303" />
-    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.1.303" />
+    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="penumbra\MonoGame.Penumbra.WindowsDX.csproj" />
   </ItemGroup>
 </Project>

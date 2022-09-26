@@ -3,6 +3,7 @@ using AxMC_Realms_Client.Entity;
 using Microsoft.Xna.Framework;
 using nekoT;
 using Nez;
+using Penumbra;
 using System.Collections.Generic;
 using System.IO;
 
@@ -15,6 +16,10 @@ namespace Map
         /// </summary>
         public static Point Size;
         public static byte[] byteMap;
+        private static readonly Vector2[] tilePoints =
+{
+            new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0)
+        };
         public static void Load(string path, FastList<SpriteAtlas> entities)
         {
             byte[] entids;
@@ -39,7 +44,12 @@ namespace Map
                 if (number == 255) continue;
                 if (number == 7 || number == 8)
                 {
+                    Vector2 pos = new Vector2(i % Size.X, i / Size.Y) * 50;
+                    Hull hull = new(tilePoints);
+                    hull.Position = pos;
+                    hull.Scale = new(50);
                     Game1.MapBlocks[i] = number;
+                    Game1.penumbra.Hulls.Add(hull);
                     continue;
                 }
                 Game1.MapTiles[i] = new Tile();
@@ -84,7 +94,12 @@ namespace Map
                 if (number == 255) continue;
                 if (number == 7 || number == 8)
                 {
+                    Vector2 pos = new Vector2(i % Size.X, i / Size.Y) * 50;
+                    Hull hull = new(tilePoints);
+                    hull.Position = pos;
+                    hull.Scale = new(50);
                     Game1.MapBlocks[i] = number;
+                    Game1.penumbra.Hulls.Add(hull);
                     continue;
                 }
                 Game1.MapTiles[i] = new Tile();

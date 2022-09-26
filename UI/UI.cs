@@ -36,9 +36,8 @@ namespace AxMC_Realms_Client.UI
         public float SlotSizeMultiplier { get { return slotsize; } set { slotsize = value; SlotResize(); } }
         float slotsize = 1;
 
-        public UI(int swidth, int sheight, Texture2D slot, Texture2D bag, Texture2D stats, Player player)
+        public UI(int swidth, int sheight, GraphicsDeviceManager gdm, Texture2D slot, Texture2D bag, Texture2D stats, Player player)
         {
-
             SlotSprite = slot;
             BagUI = bag;
             StatIcons = stats;
@@ -68,13 +67,14 @@ namespace AxMC_Realms_Client.UI
                 {
                     SlotSizeMultiplier = br.ReadSingle();
                     player.AllowRotation = br.ReadBoolean();
+                    gdm.SynchronizeWithVerticalRetrace = br.ReadBoolean();
                 }
             else
             {
                 SlotSizeMultiplier = 1;
             }
 
-            opts = new(swidth, sheight, this, player);
+            opts = new(swidth, sheight, this, player,gdm);
 
             Resize(swidth, sheight);
 
@@ -156,7 +156,7 @@ namespace AxMC_Realms_Client.UI
             }
             UIResize();
         }
-        public void Update(FastList<SpriteAtlas> entities)
+        public void Update(FastList<SpriteAtlas> entities, GraphicsDeviceManager gdm)
         {
             MRect = new Rectangle(Input.MState.Position, new Point(1, 1));
 
@@ -166,7 +166,7 @@ namespace AxMC_Realms_Client.UI
             }
             if (opts.Active)
             {
-                opts.Update(this, entities[0] as Player);
+                opts.Update(this, entities[0] as Player,gdm);
                 return;
             }
 
@@ -228,13 +228,17 @@ namespace AxMC_Realms_Client.UI
                 PortalEnter.Draw(sb);
             }
             sb.Draw(SlotSprite, ExpJarRect, ExpJarSRect, Color.White); // Jar is in front of liquid
+            for (int i = 0; i < Inventory.Length; i++)
+            {
+                Inventory[i].Draw(sb, SlotSprite);// Draw inv slot
+            }
             sb.End();
 
             outline.Parameters["OutlineCol"].SetValue(Color.Black.ToVector4());
             sb.Begin(samplerState: SamplerState.PointClamp, effect: outline);
             for (int i = 0; i < Inventory.Length; i++)
             {
-                Inventory[i].Draw(sb, SlotSprite);// Draw inv slot
+                Inventory[i].DrawItem(sb);// Draw inv slot
             }
             sb.End();
 

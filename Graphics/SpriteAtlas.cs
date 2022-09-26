@@ -90,7 +90,6 @@ namespace nekoT
 
             var output = new Texture2D(tex.GraphicsDevice, fw, fh);
 
-
             for(int i =0; i < Sources.Length; i++)
             {
                 var data = new Color[Sources[i].Width * Sources[i].Height];
@@ -119,13 +118,6 @@ namespace nekoT
                 Sources[i].Width += 2;
                 Sources[i].Height+= 2;
             }
-
-            MemoryStream ms = new();
-            output.SaveAsPng(ms, output.Width,output.Height);
-
-            ms.Seek(0, SeekOrigin.Begin);
-
-            System.Drawing.Bitmap.FromStream(ms).Save("TestOutput.png");
 
             return output;
         }

@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using nekoT;
+using Penumbra;
 using System;
 using System.Collections.Generic;
 
@@ -24,6 +25,13 @@ namespace AxMC_Realms_Client.Entity
         double AnimTimer = 1;
         double Shootcd = 1;
         Point[] Frames;
+
+        public Light Light { get; } = new PointLight
+        {
+            Scale = new Vector2(2000),
+            Color = Color.White,
+            ShadowType = ShadowType.Occluded
+        };
 
         public Player(Texture2D spriteSheet, Texture2D BulletTexture) :
             base(spriteSheet, 6, 5, 0)
@@ -70,9 +78,11 @@ namespace AxMC_Realms_Client.Entity
                 if (AnimTimer > 0) AnimTimer -= gameTime.ElapsedGameTime.TotalSeconds;
                 if (Shootcd > 0) Shootcd -= gameTime.ElapsedGameTime.TotalSeconds * (Stats[3] * agilityfactor);
 
-                if (AnimTimer < 0.8 && CurrentFrame == 4 || CurrentFrame == 9 || CurrentFrame == 14)
+                if (AnimTimer < 0.8)
                 {
+                    if (CurrentFrame == 4 || CurrentFrame == 9 || CurrentFrame == 14)
                     CurrentFrame--;
+
                 }
                 if (Shootcd <= 0)
                 {
@@ -107,14 +117,14 @@ namespace AxMC_Realms_Client.Entity
             {
                 Direction.X = -1;
 
-                CurrentFrame = 0;
+                CurrentFrame = 1;
                 Effect = SpriteEffects.FlipHorizontally;
 
             }
             if (Input.KState.IsKeyDown(Input.MoveRight))
             {
                 Direction.X = 1;
-                CurrentFrame = 0;
+                CurrentFrame = 1;
                 Effect = SpriteEffects.None;
 
             }
@@ -132,33 +142,39 @@ namespace AxMC_Realms_Client.Entity
                 if (Position.Y < 0 || Position.Y > Map.Map.Size.Y * 50) Position.Y -= Direction.Y;
                 TiledPos = (Position * .02f).ToPoint();
                 GetSquareOfSight();
-                /*for (int i = 0; i <xyCount.X; i++) // this is collision code that doesnt work
-                {
-                    for (int j = 0; j < xyCount.Y; j++)
-                    {
-                        var index = Player.SquareOfSightStartIndex + i + j * Map.Map.MapSize.X;
-                        if (index < 0 || index > Game1.MapTiles.Length) continue;
-                        if (Game1.MapTiles[index] is null)
-                        {
-                            if (Position.X > (Game1.MapBlocks[index].X + 0.5f) * 50 &&
-                        Position.X < (Game1.MapBlocks[index].X - 0.5f) * 50) Position.X -= Direction.X;
-
-                            if ( Position.Y > (Game1.MapBlocks[index].Y + 0.5f) * 50 &&
-                                Position.Y < (Game1.MapBlocks[index].Y - 0.5f) * 50) Position.Y -= Direction.Y;
-
-                        }
-                    }
-                }*/
+                Light.Position = Position;
                 if (BasicEntity.InteractEnt.Length > 0)
                 {
+                    int id = -1, previd = -1;
+                    float d = 0, prevd = 0;
                     for (int i = 0; i < BasicEntity.InteractEnt.Length; i++)
                     {
-                        if ((BasicEntity.InteractEnt[i].Rect.Location.ToVector2() - Position).LengthSquared() < 900) // 30is the hitbox size
+                        float dist = (BasicEntity.InteractEnt[i].Rect.Location.ToVector2() - Position).LengthSquared();
+                        if (dist < 900) // 30is the hitbox size
                         {
-                            BasicEntity.NInteract = i; break;
+                            if (previd == -1) {
+                                previd = i;
+                                prevd = dist;
+                            }
+                            else
+                            {
+                                id = i;
+                                d = dist;
+                                break;
+                            }
+
+                        }
+                        else if (i == BasicEntity.InteractEnt.Length - 1 && id == -1)
+                        {
+                            id = previd;
+                            d = dist;
                         }
                         else BasicEntity.NInteract = -1;
                     }
+                    if (prevd < d)
+                        BasicEntity.NInteract = previd;
+                    else
+                        BasicEntity.NInteract = id;
                 }
                 //Connection.SendPosition(Position.ToByte());
                 Direction = Vector2.Zero;
@@ -208,6 +224,7 @@ namespace AxMC_Realms_Client.Entity
                 b.LifeSpan = 2;
                 b.Damage = Stats[1];
                 Shootcd = 1;
+                AnimTimer = 1;
                 float someoffset = -1.5f + Stats[5] * 0.5f;
                 for (int i = 0; i < Stats[5]; i++)
                 {
