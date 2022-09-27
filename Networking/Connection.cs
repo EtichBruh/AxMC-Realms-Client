@@ -17,7 +17,8 @@ namespace AxMC_Realms_Client.Networking
             try
             {
                 client.Connect(IPAddress.Parse("127.0.0.1"), 2050);
-                Begin();
+                if (client.Connected)
+                    Begin();
                 /*                  Console.WriteLine("connected!");
                 int bytesread = await client.ReceiveAsync(Buffer, SocketFlags.None);
                 Array.Resize(ref Buffer, bytesread);
@@ -29,7 +30,6 @@ namespace AxMC_Realms_Client.Networking
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 client.Close();
             }
         }
@@ -61,7 +61,7 @@ namespace AxMC_Realms_Client.Networking
             if (index == PacketId.Hello)
             {
                 players = Buffer[1];
-                Game1.NetworkPlayers = new Vector2[players-1];
+                Game1.NetworkPlayers = new Vector2[players - 1];
                 return true;
             }
             if (index == PacketId.Position)

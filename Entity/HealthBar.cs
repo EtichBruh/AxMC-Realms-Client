@@ -1,5 +1,4 @@
-﻿using AxMC_Realms_Client.Classes;
-using AxMC_Realms_Client.Graphics;
+﻿using AxMC_Realms_Client.Graphics;
 using Microsoft.Xna.Framework;
 
 namespace AxMC_Realms_Client.Entity
@@ -10,6 +9,5 @@ namespace AxMC_Realms_Client.Entity
             base(Color.Red, true, true, CurrentHp, 8)
         {
         }
-
     }
 }

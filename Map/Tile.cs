@@ -11,7 +11,7 @@ namespace Map
         public byte Lightness;
         public static void Initialize()
         {
-            for(int i =0; i < byte.MaxValue; i++)
+            for (int i = 0; i < byte.MaxValue; i++)
             {
                 SRects[i] = new(16 * i, 0, 16, 16);
             }

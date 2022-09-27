@@ -27,13 +27,13 @@ namespace AxMC_Realms_Client.UI
 
             Position = new((sw - width) * .5f, (sh - height) * .5f);
             // sorry for hardcode 15 is height of top corner in Panel
-            Title = new((sw - 64) / 2,(int)Position.Y - 15 - 6, 64,32,ButtonType.Big, "Options");
+            Title = new((sw - 64) / 2, (int)Position.Y - 15 - 6, 64, 32, ButtonType.Big, "Options");
 
             // 40 is offset from right side
             var buttonX = (sw + width) / 2;
-            SlotSize = new(buttonX - 40, (int)Position.Y + 16,28,28,ButtonType.Small, ui.SlotSizeMultiplier.ToString());
-            AllowRotate = new(buttonX - 44 - 4, SlotSize.rect.Bottom + 4, 44,36,ButtonType.Medium, player.AllowRotation.ToString());
-            VSync = new(buttonX - 44 - 4, AllowRotate.rect.Bottom + 4, 44,36,ButtonType.Medium, gdm.SynchronizeWithVerticalRetrace.ToString());
+            SlotSize = new(buttonX - 40, (int)Position.Y + 16, 28, 28, ButtonType.Small, ui.SlotSizeMultiplier.ToString());
+            AllowRotate = new(buttonX - 44 - 4, SlotSize.rect.Bottom + 4, 44, 36, ButtonType.Medium, player.AllowRotation.ToString());
+            VSync = new(buttonX - 44 - 4, AllowRotate.rect.Bottom + 4, 44, 36, ButtonType.Medium, gdm.SynchronizeWithVerticalRetrace.ToString());
             gdm.ApplyChanges();
 
         }
@@ -76,9 +76,9 @@ namespace AxMC_Realms_Client.UI
         {
             Panel.Draw(sb, UI.SlotSprite, Position, width, height);
 
-            sb.DrawString(Game1.Arial, "Inventory slot size", new(Position.X + 10, SlotSize.rect.Y ), Color.White,0,new(0,-50),0.12f,0,0);
-            sb.DrawString(Game1.Arial, "Allow Camera Rotation", new(Position.X + 10, AllowRotate.rect.Y ), Color.White,0,new(0,-50),0.12f,0,0);
-            sb.DrawString(Game1.Arial, "VSync", new(Position.X + 10, VSync.rect.Y ), Color.White,0,new(0,-50),0.12f,0,0);
+            sb.DrawString(Game1.Arial, "Inventory slot size", new(Position.X + 10, SlotSize.rect.Y), Color.White, 0, new(0, -50), 0.12f, 0, 0);
+            sb.DrawString(Game1.Arial, "Allow Camera Rotation", new(Position.X + 10, AllowRotate.rect.Y), Color.White, 0, new(0, -50), 0.12f, 0, 0);
+            sb.DrawString(Game1.Arial, "VSync", new(Position.X + 10, VSync.rect.Y), Color.White, 0, new(0, -50), 0.12f, 0, 0);
 
             SlotSize.Draw(sb);
             AllowRotate.Draw(sb);

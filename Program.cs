@@ -12,7 +12,6 @@ namespace AxMC_Realms_Client
         {
 
             new Thread(Connection.Connect).Start();
-
             using (var game = new Game1())
                 game.Run();
         }

@@ -13,7 +13,7 @@ namespace AxMC_Realms_Client.UI
     }
     public class Button
     {
-        static Rectangle[] Source = new Rectangle[] { 
+        static Rectangle[] Source = new Rectangle[] {
             new(89, 59, 32, 16),
             new(89, 43, 22, 16),
             new(89, 29, 14, 14),
@@ -52,7 +52,7 @@ namespace AxMC_Realms_Client.UI
             }
             return false;
         }
-        
+
         public void Draw(SpriteBatch sb)
         {
             var c = MouseDown ? Color.Gray : Color.White;

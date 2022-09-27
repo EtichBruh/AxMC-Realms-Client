@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace nekoT
 {
@@ -71,14 +70,14 @@ namespace nekoT
             }
             return output;
         }
-        public static Texture2D AddPadding(Texture2D tex,ref Rectangle[] Sources)
+        public static Texture2D AddPadding(Texture2D tex, ref Rectangle[] Sources)
         {
             int fw = tex.Width;
             int fh = tex.Height;
 
             for (int i = 0; i < Sources.Length; i++)
             {
-                if(Sources[i].X == 0)
+                if (Sources[i].X == 0)
                 {
                     fh += 2;
                 }
@@ -90,7 +89,7 @@ namespace nekoT
 
             var output = new Texture2D(tex.GraphicsDevice, fw, fh);
 
-            for(int i =0; i < Sources.Length; i++)
+            for (int i = 0; i < Sources.Length; i++)
             {
                 var data = new Color[Sources[i].Width * Sources[i].Height];
 
@@ -105,7 +104,7 @@ namespace nekoT
                 }
                 if (Sources[i].Y > 0)
                 {
-                    Sources[i].Y+=2;
+                    Sources[i].Y += 2;
                 }
 
                 Sources[i].X++;
@@ -116,7 +115,7 @@ namespace nekoT
                 Sources[i].X--;
                 Sources[i].Y--;
                 Sources[i].Width += 2;
-                Sources[i].Height+= 2;
+                Sources[i].Height += 2;
             }
 
             return output;

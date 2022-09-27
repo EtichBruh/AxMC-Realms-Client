@@ -10,7 +10,7 @@ namespace AxMC_Realms_Client.UI
         public Rectangle SrcRect = new(89, 0, 25, 25);
         public bool mouseHoverOn;
         //public bool DrawStats;
-        public Slot(int itemid = -1,int sourceY = 4)
+        public Slot(int itemid = -1, int sourceY = 4)
         {
             item = itemid;
             SrcRect.Y += sourceY;
@@ -21,13 +21,13 @@ namespace AxMC_Realms_Client.UI
         }
         public void Draw(SpriteBatch sb, Texture2D slotsprite)
         {
-                sb.Draw(slotsprite, Rect, SrcRect, new(255, 255, 255, 127)); // Draw slot
+            sb.Draw(slotsprite, Rect, SrcRect, new(255, 255, 255, 127)); // Draw slot
         }
         public void DrawItem(SpriteBatch sb)
         {
             if (item != -1)
             {
-                Item.Draw(sb, Rect.Center.ToVector2(), 16, mouseHoverOn, item);
+                Item.Draw(sb, Rect.Center.ToVector2(), 24, mouseHoverOn, item);
             }
         }
     }

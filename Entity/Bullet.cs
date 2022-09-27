@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using nekoT;
-using System;
 using System.Collections.Generic;
 
 namespace AxMC_Realms_Client.Entity
@@ -25,12 +24,13 @@ namespace AxMC_Realms_Client.Entity
         {
             if (isRemoved == true) return;
             LifeSpan -= gameTime.ElapsedGameTime.TotalSeconds;
-            if (isRemoved = LifeSpan <= 0) {
+            if (isRemoved = LifeSpan <= 0)
+            {
             }
             else
             {
                 Position += Direction * Speed;
-                if(Position.X < 0 || Position.Y < 0) { isRemoved = true;return; }
+                if (Position.X < 0 || Position.Y < 0) { isRemoved = true; return; }
                 int index = (int)Position.X / 50 + ((int)Position.Y / 50) * Map.Map.Size.X;
                 isRemoved = (index < Game1.MapTiles.Length && index > -1 && Game1.MapTiles[index] is null);
             }

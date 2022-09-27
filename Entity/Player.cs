@@ -23,6 +23,7 @@ namespace AxMC_Realms_Client.Entity
         public static int Mana = 200;
         public bool AllowRotation = true;
         double AnimTimer = 1;
+        double WalkAnim = 0;
         double Shootcd = 1;
         Point[] Frames;
 
@@ -72,17 +73,25 @@ namespace AxMC_Realms_Client.Entity
             if (!isRemoved)
             {
                 PreviousFrame = CurrentFrame;
-                Move(gameTime);
+                var agmul = (Stats[3] * agilityfactor);
+
+
+                Move(gameTime, agmul);
                 Enemy.NearestPlayer = Position;
                 HPbar.Update(Position.X, Position.Y);
                 if (AnimTimer > 0) AnimTimer -= gameTime.ElapsedGameTime.TotalSeconds;
                 if (Shootcd > 0) Shootcd -= gameTime.ElapsedGameTime.TotalSeconds * (Stats[3] * agilityfactor);
 
+
                 if (AnimTimer < 0.8)
                 {
                     if (CurrentFrame == 4 || CurrentFrame == 9 || CurrentFrame == 14)
-                    CurrentFrame--;
-
+                        CurrentFrame--;
+                }
+                if (WalkAnim >= 0.2 * agmul)
+                {
+                    if (CurrentFrame == 1 || CurrentFrame == 6 || CurrentFrame == 11)
+                        CurrentFrame++;
                 }
                 if (Shootcd <= 0)
                 {
@@ -95,41 +104,51 @@ namespace AxMC_Realms_Client.Entity
                 RotateZoom();
             }
         }
-        private void Move(GameTime gt)
+        private void Move(GameTime gt, double agmul)
         {
+            var timerfirstframe = 0.2 * agmul;
+            var timerresetanim = 0.4 * agmul;
             if (Input.KState.IsKeyDown(Input.MoveDown))
             {
-                Direction.Y = 1;
+                Direction.Y = 1.25f;
 
-                CurrentFrame = 5;
+                if (WalkAnim < timerfirstframe)
+                    CurrentFrame = 6;
                 Effect = SpriteEffects.None;
 
             }
             if (Input.KState.IsKeyDown(Input.MoveUp))
             {
-                Direction.Y = -1;
-
-                CurrentFrame = 10;
+                Direction.Y = -1.25f;
+                if (WalkAnim < timerfirstframe)
+                    CurrentFrame = 11;
                 Effect = SpriteEffects.None;
 
             }
             if (Input.KState.IsKeyDown(Input.MoveLeft))
             {
-                Direction.X = -1;
-
-                CurrentFrame = 1;
+                Direction.X = -1.25f;
+                if (WalkAnim < timerfirstframe)
+                    CurrentFrame = 1;
                 Effect = SpriteEffects.FlipHorizontally;
 
             }
             if (Input.KState.IsKeyDown(Input.MoveRight))
             {
-                Direction.X = 1;
-                CurrentFrame = 1;
+                Direction.X = 1.25f;
+                if (WalkAnim < timerfirstframe)
+                    CurrentFrame = 1;
+
                 Effect = SpriteEffects.None;
 
             }
             if (Direction != Vector2.Zero)
             {
+                if (WalkAnim > timerresetanim)
+                {
+                    WalkAnim = 0;
+                }
+                WalkAnim += gt.ElapsedGameTime.TotalSeconds * agmul;
                 if (Rotation != 0)
                 {
                     var rot = MathF.Atan2(Direction.Y, Direction.X) + Rotation;
@@ -152,7 +171,8 @@ namespace AxMC_Realms_Client.Entity
                         float dist = (BasicEntity.InteractEnt[i].Rect.Location.ToVector2() - Position).LengthSquared();
                         if (dist < 900) // 30is the hitbox size
                         {
-                            if (previd == -1) {
+                            if (previd == -1)
+                            {
                                 previd = i;
                                 prevd = dist;
                             }
@@ -179,6 +199,12 @@ namespace AxMC_Realms_Client.Entity
                 //Connection.SendPosition(Position.ToByte());
                 Direction = Vector2.Zero;
                 //Connection.SendPosition(Position.ToByte());
+            }
+            else
+            {
+                if (CurrentFrame > 0 && CurrentFrame < 3) CurrentFrame = 0;
+                if (CurrentFrame > 5 && CurrentFrame < 7) CurrentFrame = 5;
+                if (CurrentFrame > 10 && CurrentFrame < 13) CurrentFrame = 10;
             }
         }
         /*if (Bag.Bags.Length > 0)

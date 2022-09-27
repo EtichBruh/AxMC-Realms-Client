@@ -16,10 +16,9 @@ namespace AxMC_Realms_Client.Entity
         public static Texture2D tempText;
         public ProgressBar HPbar;
         private double timer, timera = 1;
+        private double WalkAnim = 0;
         const int FramesOffset = 15; // 15 is length of player frames
         static Point[] Frames;
-
-
 
         public Enemy(Texture2D SpriteSheet)
             : base(SpriteSheet, 6, 5, FramesOffset)
@@ -37,13 +36,12 @@ namespace AxMC_Realms_Client.Entity
                 Frames[i].Y = _srcRect.Height * ((i + FramesOffset) / columns);
             }
         }
-        const float texoffset = 1.5707964f;
         public override void Update(GameTime gameTime, List<SpriteAtlas> spritesToAdd)
         {
             for (int i = 0; i < Game1._PlayerBullets.Length; i++)
             {
                 Bullet b = Game1._PlayerBullets[i];
-                if ((b.Position - Position).LengthSquared() < 2501)
+                if (!b.isRemoved && (b.Position - Position).LengthSquared() < 2501)
                 {
                     isRemoved = ((HPbar.Progress -= b.Damage) <= 0);
                     b.isRemoved = true;
@@ -63,13 +61,15 @@ namespace AxMC_Realms_Client.Entity
             PreviousFrame = CurrentFrame;
             Rotation = -Camera.RotDegr;
             timer -= gameTime.ElapsedGameTime.TotalSeconds;
-            if (timer < 0.8 &&
-                CurrentFrame == 4 + FramesOffset ||
-                CurrentFrame == 9 + FramesOffset ||
-                CurrentFrame == 14 + FramesOffset
-                )
+            if (timer < 0.8)
             {
-                CurrentFrame--;
+                if (CurrentFrame == 4 || CurrentFrame == 9 || CurrentFrame == 14)
+                    CurrentFrame--;
+            }
+            if (WalkAnim >= 0.2)
+            {
+                if (CurrentFrame == 1 || CurrentFrame == 6 || CurrentFrame == 11)
+                    CurrentFrame++;
             }
             bool seeplayer = (NearestPlayer - Position).LengthSquared() < 500 * 500;
             if (timer < 0)
@@ -80,35 +80,47 @@ namespace AxMC_Realms_Client.Entity
                 {
                     Direction.X = (float)new Random().NextDouble() * 2 - 1;
                     Direction.Y = (float)new Random().NextDouble() * 2 - 1;
+                    if (Position.X < 0 || Position.X > Map.Map.Size.X * 50) Direction.X = -Direction.X;
+                    if (Position.Y < 0 || Position.Y > Map.Map.Size.Y * 50) Direction.Y = -Direction.Y;
                 }
             }
-            Position += Direction;
             if (seeplayer)
             {
                 Direction = Vector2.Normalize(NearestPlayer - Position);
-
-                float Rotation = MathF.Atan2(Direction.Y, Direction.X) + 1.5707964f;
+                float Rotation = MathF.Atan2(Direction.Y, Direction.X) + Bullet.TexOffset;
                 if (Rotation > 0 && Rotation < Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 1;
+                    if (WalkAnim < 0.2)
+                        CurrentFrame = 1;
                 }
                 else if (Rotation > Bullet.TexOffset * 2 && Rotation < Bullet.TexOffset * 4)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 6;
+                    if (WalkAnim < 0.2)
+                        CurrentFrame = 6;
                 }
                 else if (Rotation < 0 && Rotation > -Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 11;
+                    if (WalkAnim < 0.2)
+                        CurrentFrame = 11;
                 }
                 else
                 {
                     Effect = SpriteEffects.FlipHorizontally;
-                    CurrentFrame = 1;
+                    if (WalkAnim < 0.2)
+                        CurrentFrame = 1;
                 }
+
+                if (WalkAnim > 0.4)
+                {
+                    WalkAnim = 0;
+                }
+                WalkAnim += gameTime.ElapsedGameTime.TotalSeconds;
+
             }
+            Position += Direction;
             HPbar.Update(Position.X, Position.Y);
             if (PreviousFrame != CurrentFrame)
             {
@@ -130,12 +142,12 @@ namespace AxMC_Realms_Client.Entity
                 else if (Rotation > Bullet.TexOffset * 2 && Rotation < Bullet.TexOffset * 4)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 9 ;
+                    CurrentFrame = 9;
                 }
                 else if (Rotation < 0 && Rotation > -Bullet.TexOffset * 2)
                 {
                     Effect = SpriteEffects.None;
-                    CurrentFrame = 14 ;
+                    CurrentFrame = 14;
                 }
                 else
                 {

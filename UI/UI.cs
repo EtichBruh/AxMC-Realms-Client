@@ -74,7 +74,7 @@ namespace AxMC_Realms_Client.UI
                 SlotSizeMultiplier = 1;
             }
 
-            opts = new(swidth, sheight, this, player,gdm);
+            opts = new(swidth, sheight, this, player, gdm);
 
             Resize(swidth, sheight);
 
@@ -166,7 +166,7 @@ namespace AxMC_Realms_Client.UI
             }
             if (opts.Active)
             {
-                opts.Update(this, entities[0] as Player,gdm);
+                opts.Update(this, entities[0] as Player, gdm);
                 return;
             }
 
@@ -203,10 +203,10 @@ namespace AxMC_Realms_Client.UI
 
             StatsRect.Y += 16 + 8;// Reset back
 
-            if (Player.XP > 0)
+            if (Player.XP > 0) //Draw level, experience 
             {
-                int height = (int)(Player.XP * factor);
-                sb.Draw(ProgressBar.Pixel, new Rectangle(ExpJarRect.X, ExpJarRect.Bottom - height - 10, ExpJarRect.Width, height), Color.DarkRed);
+                int height = (int)(Player.XP * factor) % 92;
+                sb.Draw(ProgressBar.Pixel, new Rectangle(ExpJarRect.X, ExpJarRect.Bottom - height - 8, ExpJarRect.Width, height), Color.DarkRed);
             }
 
             if (Player.HPbar.Progress > 0) // else player is dead LMAO :joy:
@@ -281,8 +281,10 @@ namespace AxMC_Realms_Client.UI
                 {
                     sb.Draw(BagUI, BagUIRect, null, Color.White, 0, new(BagUI.Width * .5f, 0), 0, 0);
                     float y = BagUIRect.Y + BagUI.Height * .5f;
-                    Item.Draw(sb, new(BagUIRect.X - BagUIRect.Width * .25f, y), 30, false, bag.items[0]);
-                    Item.Draw(sb, new(BagUIRect.X + BagUIRect.Width * .25f, y), 30, false, bag.items[1]);
+                    var x1 = BagUIRect.X - BagUIRect.Width * .25f;
+                    var x2 = BagUIRect.X + BagUIRect.Width * .25f;
+                    Item.Draw(sb, new(x1, y), 30, new Rectangle((int)x1- 15,(int)y-15,30,30).Intersects(MRect), bag.items[0]);
+                    Item.Draw(sb, new(x2, y), 30, new Rectangle((int)x2 - 15, (int)y-15, 30, 30).Intersects(MRect), bag.items[1]);
                 }
             }
             if (opts.Active)

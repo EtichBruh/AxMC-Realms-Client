@@ -14,8 +14,7 @@ namespace AxMC.Camera
 
         public static void Follow(Vector2 target)
         {
-            
-            Transform = Matrix.CreateTranslation(-target.X, -target.Y, 0)
+            Transform = Matrix.CreateTranslation((int)-target.X, (int)-target.Y, 0)
             * Matrix.CreateScale(CamZoom, CamZoom, 1)
             * Matrix.CreateRotationZ(RotDegr)
             * Matrix.CreateTranslation(View.Width * .5f, View.Height * .5f, 0);

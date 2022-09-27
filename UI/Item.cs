@@ -23,8 +23,8 @@ namespace AxMC_Realms_Client.UI
         public static Item[] items;
         public static void Load()
         {
-            items = JsonSerializer.Deserialize<Item[]>(File.ReadAllText("Items.json"), new JsonSerializerOptions{ IncludeFields =true, WriteIndented = true  });
-            for(int i =0;i < items.Length; i++)
+            items = JsonSerializer.Deserialize<Item[]>(File.ReadAllText("Items.json"), new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+            for (int i = 0; i < items.Length; i++)
             {
                 var item = items[i];
 
@@ -43,7 +43,7 @@ namespace AxMC_Realms_Client.UI
         public static void Draw(SpriteBatch sb, Vector2 Position, int size, bool DrawDesc, int id)
         {
             var item = items[id];
-            sb.Draw(SpriteSheet, Position, item.Source, Color.White, 0, item.origin, size* scalefactor, 0, 0); // Draw Item
+            sb.Draw(SpriteSheet, Position, item.Source, Color.White, 0, item.origin, size * scalefactor, 0, 0); // Draw Item
             if (DrawDesc)
             {
                 var a = Game1.Arial.MeasureString(item._description) * .01f * 12 * 0.5f; // * .01f because the font size is 100 so i scale it to 1 then multiply by size and make it centred
